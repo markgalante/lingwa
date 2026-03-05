@@ -9,15 +9,15 @@
 **Goal**: Establish the project structure, developer tooling, and the user authentication layer.
 
 ### 0.1 – Project scaffold
-- [ ] Initialise a monorepo (e.g. with a `frontend/` and `backend/` directory at the repo root)
-- [ ] Add `README.md` setup instructions (prerequisites, how to run locally)
-- [ ] Configure `frontend/` with **Vite** (React + TypeScript)
-- [ ] Configure `backend/` as a **FastAPI** project with a `pyproject.toml` / `requirements.txt`
-- [ ] Add **Tailwind CSS** to the frontend
-- [ ] Set up **ESLint** + **Prettier** for the frontend
-- [ ] Set up **Ruff** / **Black** + **mypy** for the backend
-- [ ] Add a `.gitignore` covering `node_modules/`, Python virtual environments, and build artefacts
-- [ ] Add a basic `docker-compose.yml` so both services can be started with one command
+- [x] Initialise a monorepo (e.g. with a `frontend/` and `backend/` directory at the repo root)
+- [x] Add `README.md` setup instructions (prerequisites, how to run locally)
+- [x] Configure `frontend/` with **Vite** (React + TypeScript)
+- [x] Configure `backend/` as a **FastAPI** project with a `pyproject.toml` / `requirements.txt`
+- [x] Add **Tailwind CSS** to the frontend
+- [x] Set up **ESLint** + **Prettier** for the frontend
+- [x] Set up **Ruff** / **mypy** for the backend
+- [x] Add a `.gitignore` covering `node_modules/`, Python virtual environments, and build artefacts
+- [x] Add a basic `docker-compose.yml` so both services can be started with one command
 
 ### 0.2 – Data schemas
 

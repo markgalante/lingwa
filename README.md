@@ -6,7 +6,7 @@ Lingwa is a web app that helps users learn vocabulary in a target language throu
 
 ---
 
-## Tech stack (planned)
+## Tech stack
 
 | Layer | Technology |
 |---|---|
@@ -16,6 +16,80 @@ Lingwa is a web app that helps users learn vocabulary in a target language throu
 | Auth | Email/password + Google OAuth, JWT |
 | NLP | spaCy (per-language models; starting with Dutch `nl_core_news_sm`) |
 | TTS | Coqui TTS (per-language voice models) |
+
+---
+
+## Getting started
+
+### Prerequisites
+
+| Tool | Version |
+|---|---|
+| Node.js | 22+ |
+| npm | 10+ |
+| Python | 3.11+ |
+| Docker + Docker Compose | optional, for one-command startup |
+
+---
+
+### Option A – Docker (recommended)
+
+```bash
+docker compose up
+```
+
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8000
+- API docs: http://localhost:8000/docs
+
+---
+
+### Option B – Local development
+
+**Backend**
+
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
+pip install -r requirements-dev.txt
+uvicorn app.main:app --reload
+```
+
+The API will be available at http://localhost:8000.
+
+**Frontend**
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The app will be available at http://localhost:5173.
+
+---
+
+### Linting & formatting
+
+**Frontend**
+
+```bash
+cd frontend
+npm run lint          # ESLint
+npx prettier --check .  # Prettier check
+npx prettier --write .  # Prettier fix
+```
+
+**Backend**
+
+```bash
+cd backend
+source .venv/bin/activate
+ruff check .          # lint
+ruff format .         # format
+mypy .                # type-check
+```
 
 ---
 
@@ -61,9 +135,3 @@ The first milestone sets up the project scaffold and the user authentication lay
 | `created_at` | datetime | UTC |
 
 See [ROADMAP.md](./ROADMAP.md) for the full development plan.
-
----
-
-## Getting started
-
-> Setup instructions will be added once the project scaffold is in place (Phase 0).
