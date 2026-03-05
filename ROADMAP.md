@@ -4,7 +4,7 @@
 
 ---
 
-## Phase 0 – Foundation & Authentication (Week 1)
+## Phase 0 – Foundation & Authentication
 
 **Goal**: Establish the project structure, developer tooling, and the user authentication layer.
 
@@ -70,7 +70,7 @@
 
 ---
 
-## Phase 1 – Backend: NLP & Vocabulary Extraction (Weeks 2–3)
+## Phase 1 – Backend: NLP & Vocabulary Extraction
 
 **Goal**: Accept a pasted article in the user's target language and return structured vocabulary data.
 
@@ -103,7 +103,7 @@
 
 ---
 
-## Phase 2 – Backend: Text-to-Speech (Week 4)
+## Phase 2 – Backend: Text-to-Speech
 
 **Goal**: Return audio pronunciation for individual words in the user's target language.
 
@@ -115,7 +115,7 @@
 
 ---
 
-## Phase 3 – Frontend: Article Input (Week 5)
+## Phase 3 – Frontend: Article Input
 
 **Goal**: Provide a clean UI for pasting an article and triggering processing.
 
@@ -127,7 +127,7 @@
 
 ---
 
-## Phase 4 – Frontend: Matching Quiz (Weeks 6–7)
+## Phase 4 – Frontend: Matching Quiz
 
 **Goal**: Interactive, adaptive vocabulary matching game.
 
@@ -150,7 +150,7 @@
 
 ---
 
-## Phase 5 – Frontend: Interactive Article View (Week 8)
+## Phase 5 – Frontend: Interactive Article View
 
 **Goal**: Display the article with clickable, tooltip-enabled words.
 
@@ -164,7 +164,7 @@
 
 ---
 
-## Phase 6 – UI / UX Polish (Week 9)
+## Phase 6 – UI / UX Polish
 
 **Goal**: Make the app pleasant and accessible to use.
 
@@ -178,7 +178,7 @@
 
 ---
 
-## Phase 7 – Integration, QA & Documentation (Week 10)
+## Phase 7 – Integration, QA & Documentation
 
 **Goal**: Production-ready prototype with clear docs.
 
@@ -207,14 +207,14 @@
 
 ## Milestone Summary
 
-| Phase | Deliverable | Target Week |
-|-------|-------------|-------------|
-| 0 | Project skeleton, tooling & authentication | 1 |
-| 1 | NLP vocabulary extraction API | 2–3 |
-| 2 | Text-to-speech endpoint | 4 |
-| 3 | Article input UI | 5 |
-| 4 | Matching quiz with adaptive retesting | 6–7 |
-| 5 | Interactive article view | 8 |
-| 6 | UI/UX polish & accessibility | 9 |
-| 7 | Integration, QA & docs | 10 |
-| 8 | Optional enhancements | Post-launch |
+| Phase | Deliverable |
+|-------|-------------|
+| 0 | Project skeleton, tooling & authentication |
+| 1 | NLP vocabulary extraction API |
+| 2 | Text-to-speech endpoint |
+| 3 | Article input UI |
+| 4 | Matching quiz with adaptive retesting |
+| 5 | Interactive article view |
+| 6 | UI/UX polish & accessibility |
+| 7 | Integration, QA & docs |
+| 8 | Optional enhancements |
