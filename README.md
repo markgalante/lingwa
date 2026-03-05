@@ -2,7 +2,7 @@
 
 > **Learning vocab that's meaningful to you.**
 
-Lingwa is a web app that helps users learn Dutch vocabulary through an adaptive matching quiz, followed by reading an interactive article with hover-tooltips and pronunciation support.
+Lingwa is a web app that helps users learn vocabulary in a target language through an adaptive matching quiz, followed by reading an interactive article with hover-tooltips and pronunciation support. The initial version targets Dutch, with additional languages planned.
 
 ---
 
@@ -14,8 +14,8 @@ Lingwa is a web app that helps users learn Dutch vocabulary through an adaptive 
 | Backend | Python, FastAPI |
 | Database | PostgreSQL (SQLite for local dev) |
 | Auth | Email/password + Google OAuth, JWT |
-| NLP | spaCy (Dutch model) |
-| TTS | Coqui TTS |
+| NLP | spaCy (per-language models; starting with Dutch `nl_core_news_sm`) |
+| TTS | Coqui TTS (per-language voice models) |
 
 ---
 

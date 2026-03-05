@@ -1,6 +1,6 @@
-# Lingwa – Dutch Vocab Matching Quiz App: Roadmap
+# Lingwa – Vocab Matching Quiz App: Roadmap
 
-> **Goal**: A web app that helps users learn Dutch vocabulary through an adaptive matching quiz, followed by reading an interactive article with hover-tooltips and pronunciation support.
+> **Goal**: A web app that helps users learn vocabulary in a target language through an adaptive matching quiz, followed by reading an interactive article with hover-tooltips and pronunciation support. The initial version targets Dutch, with additional languages planned.
 
 ---
 
@@ -72,19 +72,20 @@
 
 ## Phase 1 – Backend: NLP & Vocabulary Extraction (Weeks 2–3)
 
-**Goal**: Accept a pasted Dutch article and return structured vocabulary data.
+**Goal**: Accept a pasted article in the user's target language and return structured vocabulary data.
 
 ### 1.1 – FastAPI skeleton
-- [ ] `POST /api/article` – accepts raw Dutch text, returns extracted vocabulary
+- [ ] `POST /api/article` – accepts raw text and a `language_code`, returns extracted vocabulary
 - [ ] `GET /api/health` – simple liveness check
 - [ ] Add CORS middleware so the React dev server can call the API
 
 ### 1.2 – spaCy integration
-- [ ] Install `spacy` and download the Dutch model (`nl_core_news_sm`)
+- [ ] Install `spacy`; download the language model for the active language (e.g. `nl_core_news_sm` for Dutch)
+- [ ] Load models on demand per language so adding a new language only requires pointing to its spaCy model
 - [ ] Extract **unique, meaningful tokens**: nouns, verbs, adjectives (POS filtering)
 - [ ] Filter out stop-words, punctuation, numbers, and short tokens (< 3 chars)
 - [ ] Lemmatise each token so inflected forms map to a single base word
-- [ ] Return a list of `{ dutch: str, english: str, pos: str }` objects
+- [ ] Return a list of `{ source: str, translation: str, pos: str }` objects
 
 ### 1.3 – Translation
 - [ ] Integrate a free/open-source translation layer (options: `argostranslate`, `Helsinki-NLP` via HuggingFace, or a local dictionary file)
@@ -104,13 +105,13 @@
 
 ## Phase 2 – Backend: Text-to-Speech (Week 4)
 
-**Goal**: Return audio pronunciation for individual Dutch words.
+**Goal**: Return audio pronunciation for individual words in the user's target language.
 
-- [ ] Evaluate **Coqui TTS** (`tts` Python package) with a Dutch voice model
-- [ ] `GET /api/tts/{word}` – streams back a WAV/MP3 clip for the given word
-- [ ] Cache generated audio files on disk (keyed by word) to avoid re-synthesis
+- [ ] Evaluate **Coqui TTS** (`tts` Python package) with voice models for each supported language; start with Dutch
+- [ ] `GET /api/tts/{language_code}/{word}` – streams back a WAV/MP3 clip for the given word
+- [ ] Cache generated audio files on disk (keyed by language + word) to avoid re-synthesis
 - [ ] Add a fallback to the **Web Speech API** (`SpeechSynthesis`) on the frontend if the backend TTS endpoint is unavailable
-- [ ] Document how to download the Coqui Dutch model in the README
+- [ ] Document how to download Coqui voice models for each supported language in the README
 
 ---
 
@@ -131,7 +132,7 @@
 **Goal**: Interactive, adaptive vocabulary matching game.
 
 ### 4.1 – Core quiz UI
-- [ ] `QuizBoard` component: 5 Dutch words on the left, 5 shuffled English translations on the right
+- [ ] `QuizBoard` component: 5 target-language words on the left, 5 shuffled translations on the right
 - [ ] Click-to-select logic: first click selects a Dutch word, second click selects an English word
 - [ ] Highlight a **correct pair in green** and lock it (non-interactive)
 - [ ] Highlight an **incorrect pair in red** briefly, then reset the selection
@@ -181,7 +182,7 @@
 
 **Goal**: Production-ready prototype with clear docs.
 
-- [ ] End-to-end test with a real Dutch article (happy path + edge cases: very short article, all stop-words, duplicate words)
+- [ ] End-to-end test with a real article in the target language (happy path + edge cases: very short article, all stop-words, duplicate words)
 - [ ] Fix any integration issues between frontend and backend
 - [ ] Write a `CONTRIBUTING.md` with branch naming, commit style, and PR guidelines
 - [ ] Expand `README.md`:  architecture diagram, environment variables, deployment notes
