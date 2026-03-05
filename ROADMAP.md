@@ -4,19 +4,69 @@
 
 ---
 
-## Phase 0 – Foundation (Week 1)
+## Phase 0 – Foundation & Authentication (Week 1)
 
-**Goal**: Establish the project structure and developer tooling.
+**Goal**: Establish the project structure, developer tooling, and the user authentication layer.
 
+### 0.1 – Project scaffold
 - [ ] Initialise a monorepo (e.g. with a `frontend/` and `backend/` directory at the repo root)
 - [ ] Add `README.md` setup instructions (prerequisites, how to run locally)
-- [ ] Configure `frontend/` with **Create React App** or **Vite** (React + TypeScript)
+- [ ] Configure `frontend/` with **Vite** (React + TypeScript)
 - [ ] Configure `backend/` as a **FastAPI** project with a `pyproject.toml` / `requirements.txt`
 - [ ] Add **Tailwind CSS** to the frontend
 - [ ] Set up **ESLint** + **Prettier** for the frontend
 - [ ] Set up **Ruff** / **Black** + **mypy** for the backend
 - [ ] Add a `.gitignore` covering `node_modules/`, Python virtual environments, and build artefacts
 - [ ] Add a basic `docker-compose.yml` so both services can be started with one command
+
+### 0.2 – Data schemas
+
+**User** (stored in the database)
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | UUID v7 | Time-sortable primary key |
+| `email` | string (unique) | Used for login and verification |
+| `name` | string (nullable) | Display name |
+| `hashed_password` | string (nullable) | `null` until the user sets a password; always `null` for Google-only accounts |
+| `is_verified` | boolean | `false` until the e-mail verification link is clicked |
+| `verification_token` | string (nullable) | One-time URL-safe token e-mailed on signup; cleared after use |
+| `verification_token_expires` | datetime | Expiry for the verification token (e.g. 24 hours) |
+| `google_id` | string (nullable) | Google OAuth `sub` claim; `null` for email-only accounts |
+| `avatar_url` | string (nullable) | Profile picture URL, populated from Google OAuth |
+| `language_ids` | list of UUID v7 | References to languages the user is studying |
+| `created_at` | datetime | Row creation timestamp (UTC) |
+| `updated_at` | datetime | Last update timestamp (UTC) |
+
+**Language** (seed data + user-selectable)
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | UUID v7 | Time-sortable primary key |
+| `name` | string (unique) | Full language name, e.g. `"Dutch"` |
+| `code` | string (unique) | ISO 639-1 two-letter code, e.g. `"nl"` |
+| `created_at` | datetime | Row creation timestamp (UTC) |
+
+### 0.3 – Authentication flows
+
+#### Email sign-up (3-step flow)
+1. **Step 1 – Register** (`POST /auth/signup`): user submits their e-mail (and optionally a display name). The backend creates an unverified account, generates a one-time verification token, and sends a verification e-mail.
+2. **Step 2 – Verify e-mail** (`POST /auth/verify-email`): user clicks the link in their inbox (or pastes the token). The backend validates the token and its expiry.
+3. **Step 3 – Set password** (`POST /auth/set-password`): user chooses a password. The backend hashes it, marks the account as verified, clears the token, and issues a JWT access token.
+
+#### Google OAuth sign-up / login
+1. Frontend redirects to `GET /auth/google` → backend redirects user to Google consent screen.
+2. Google calls `GET /auth/google/callback?code=…` → backend exchanges the code for an access token, fetches the user's profile (email, name, avatar), upserts the user record (linking by Google ID or e-mail), marks it verified, and issues a JWT.
+
+#### Email login (returning users)
+- `POST /auth/login`: validates e-mail + password, returns a JWT.
+
+### 0.4 – Frontend auth screens
+- [ ] **Sign-up page**: e-mail input + "Continue with Google" button
+- [ ] **Check-your-inbox page**: shown after step 1 of the email flow
+- [ ] **Verify & set-password page**: token validated on load; password input to complete signup
+- [ ] **Login page**: e-mail + password for returning users
+- [ ] Store the JWT in `localStorage` (or a secure cookie) and attach it to API requests via an Axios/fetch interceptor
 
 ---
 
@@ -158,7 +208,7 @@
 
 | Phase | Deliverable | Target Week |
 |-------|-------------|-------------|
-| 0 | Project skeleton & tooling | 1 |
+| 0 | Project skeleton, tooling & authentication | 1 |
 | 1 | NLP vocabulary extraction API | 2–3 |
 | 2 | Text-to-speech endpoint | 4 |
 | 3 | Article input UI | 5 |
