@@ -1,4 +1,16 @@
 services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lingwa
+      POSTGRES_PASSWORD: lingwa
+      POSTGRES_DB: lingwa
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   backend:
     build: ./backend
     ports:
@@ -7,6 +19,9 @@ services:
       - ./backend:/app
     environment:
       - PYTHONPATH=/app
+      - DATABASE_URL=postgresql+asyncpg://lingwa:lingwa@db:5432/lingwa
+    depends_on:
+      - db
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   frontend:
@@ -17,3 +32,6 @@ services:
       - ./frontend:/app
       - /app/node_modules
     command: npm run dev -- --host
+
+volumes:
+  postgres_data:

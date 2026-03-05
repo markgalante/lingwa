@@ -19,7 +19,7 @@
 - [x] Add a `.gitignore` covering `node_modules/`, Python virtual environments, and build artefacts
 - [x] Add a basic `docker-compose.yml` so both services can be started with one command
 
-### 0.2 – Data schemas
+### 0.2 – Data schemas ✓
 
 **User** (stored in the database)
 
