@@ -1,10 +1,41 @@
+import {useState} from 'react'
+import {useNavigate, Link} from 'react-router-dom'
+import {api} from '../../api/client'
+import {useAuth} from '../../context/auth/useAuth'
+
+interface TokenResponse {
+  access_token: string
+}
+
 export default function LoginPage() {
+  const {login} = useAuth()
+  const navigate = useNavigate()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setIsLoading(true)
+    try {
+      const {access_token} = await api.post<TokenResponse>('/auth/login', {email, password})
+      await login(access_token)
+      navigate('/dashboard', {replace: true})
+    } catch {
+      setError('Invalid email or password.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-950">
-      <div className="w-full max-w-sm p-8 rounded-2xl bg-gray-900 shadow-xl flex flex-col items-center gap-6">
+      <div className="w-full max-w-sm p-8 rounded-2xl bg-gray-900 shadow-xl flex flex-col gap-6">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-white tracking-tight">Lingwa</h1>
-          <p className="mt-2 text-gray-400 text-sm">Learn languages through reading</p>
+          <p className="mt-2 text-gray-400 text-sm">Welcome back</p>
         </div>
 
         <a
@@ -12,8 +43,61 @@ export default function LoginPage() {
           className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg bg-white text-gray-800 font-medium text-sm hover:bg-gray-100 transition-colors"
         >
           <GoogleIcon />
-          Sign in with Google
+          Continue with Google
         </a>
+
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-px bg-gray-700" />
+          <span className="text-gray-500 text-xs">or</span>
+          <div className="flex-1 h-px bg-gray-700" />
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="email" className="text-sm text-gray-300">Email</label>
+            <input
+              id="email"
+              type="email"
+              required
+              autoComplete="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+              placeholder="you@example.com"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="password" className="text-sm text-gray-300">Password</label>
+            <input
+              id="password"
+              type="password"
+              required
+              autoComplete="current-password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+              placeholder="••••••••"
+            />
+          </div>
+
+          {error && <p className="text-red-400 text-sm">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-sm transition-colors"
+          >
+            {isLoading ? 'Signing in…' : 'Sign in'}
+          </button>
+        </form>
+
+        <p className="text-center text-sm text-gray-400">
+          No account?{' '}
+          <Link to="/signup" className="text-indigo-400 hover:text-indigo-300">
+            Sign up
+          </Link>
+        </p>
       </div>
     </div>
   )
