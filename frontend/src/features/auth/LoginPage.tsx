@@ -2,33 +2,36 @@ import {useState} from 'react'
 import {useNavigate, Link} from 'react-router-dom'
 import {api} from '../../api/client'
 import {useAuth} from '../../context/auth/useAuth'
+import {useAppForm} from '../../hooks/useAppForm'
+import {FormField} from '../../components/ui/FormField'
+import {loginSchema} from '../../schemas/auth'
 
 interface TokenResponse {
   access_token: string
 }
 
-export default function LoginPage() {
+export function LoginPage() {
   const {login} = useAuth()
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [serverError, setServerError] = useState<string | null>(null)
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
-    setIsLoading(true)
-    try {
-      const {access_token} = await api.post<TokenResponse>('/auth/login', {email, password})
-      await login(access_token)
-      navigate('/dashboard', {replace: true})
-    } catch {
-      setError('Invalid email or password.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const form = useAppForm({
+    defaultValues: {email: '', password: ''},
+    validators: {onSubmit: loginSchema},
+    onSubmit: async ({value}) => {
+      setServerError(null)
+      try {
+        const {access_token} = await api.post<TokenResponse>('/auth/login', {
+          email: value.email,
+          password: value.password,
+        })
+        await login(access_token)
+        navigate('/dashboard', {replace: true})
+      } catch {
+        setServerError('Invalid email or password.')
+      }
+    },
+  })
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-950">
@@ -52,44 +55,51 @@ export default function LoginPage() {
           <div className="flex-1 h-px bg-gray-700" />
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="email" className="text-sm text-gray-300">Email</label>
-            <input
-              id="email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500"
-              placeholder="you@example.com"
-            />
-          </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            form.handleSubmit()
+          }}
+          className="flex flex-col gap-4"
+        >
+          <form.Field name="email">
+            {(field) => (
+              <FormField
+                field={field}
+                label="Email"
+                type="email"
+                placeholder="you@example.com"
+                autoComplete="email"
+              />
+            )}
+          </form.Field>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="password" className="text-sm text-gray-300">Password</label>
-            <input
-              id="password"
-              type="password"
-              required
-              autoComplete="current-password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500"
-              placeholder="••••••••"
-            />
-          </div>
+          <form.Field name="password">
+            {(field) => (
+              <FormField
+                field={field}
+                label="Password"
+                type="password"
+                placeholder="••••••••"
+                autoComplete="current-password"
+              />
+            )}
+          </form.Field>
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {serverError && <p className="text-red-400 text-sm">{serverError}</p>}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-sm transition-colors"
-          >
-            {isLoading ? 'Signing in…' : 'Sign in'}
-          </button>
+          <form.Subscribe selector={(state) => state.isSubmitting}>
+            {(isSubmitting) => (
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-sm transition-colors"
+              >
+                {isSubmitting ? 'Signing in…' : 'Sign in'}
+              </button>
+            )}
+          </form.Subscribe>
         </form>
 
         <p className="text-center text-sm text-gray-400">
@@ -102,6 +112,8 @@ export default function LoginPage() {
     </div>
   )
 }
+
+export default LoginPage
 
 function GoogleIcon() {
   return (
