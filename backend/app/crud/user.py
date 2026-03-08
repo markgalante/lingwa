@@ -28,6 +28,25 @@ async def get_by_google_id(db: AsyncSession, google_id: str) -> User | None:
     return result.scalar_one_or_none()
 
 
+async def create_email_user(
+    db: AsyncSession,
+    *,
+    email: str,
+    hashed_password: str,
+    name: str | None,
+) -> User:
+    user = User(
+        email=email,
+        hashed_password=hashed_password,
+        name=name,
+        is_verified=True,
+    )
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+
 async def create_google_user(
     db: AsyncSession,
     *,
