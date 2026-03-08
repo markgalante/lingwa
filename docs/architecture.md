@@ -53,17 +53,25 @@ lingwa/
 │
 ├── backend/                    # FastAPI + SQLAlchemy
 │   ├── app/
-│   │   ├── main.py             # FastAPI app instance, CORS, router mounts
+│   │   ├── main.py             # FastAPI app instance, CORS, router mounts, Swagger config
+│   │   ├── api/
+│   │   │   ├── auth.py         # /auth/* routes
+│   │   │   └── deps.py         # get_current_user dependency
 │   │   ├── core/
 │   │   │   ├── config.py       # Pydantic-settings (reads .env)
-│   │   │   └── database.py     # Async engine + session factory
+│   │   │   ├── database.py     # Async engine + session factory
+│   │   │   └── security.py     # JWT creation, password hashing/verification
+│   │   ├── crud/
+│   │   │   └── user.py         # CRUD helpers for the User model
 │   │   ├── models/
 │   │   │   ├── base.py         # DeclarativeBase + uuid7() helper
 │   │   │   ├── user.py         # User ORM model + UserLanguage association table
 │   │   │   └── language.py     # Language ORM model
-│   │   └── schemas/
-│   │       ├── user.py         # UserCreate / UserRead / UserUpdate
-│   │       └── language.py     # LanguageCreate / LanguageRead
+│   │   ├── schemas/
+│   │   │   ├── user.py         # UserRegister / UserRead / CompleteRegistration / TokenResponse
+│   │   │   └── language.py     # LanguageCreate / LanguageRead
+│   │   └── services/
+│   │       └── email.py        # Resend email service (send_verification_email)
 │   ├── alembic/                # Database migrations
 │   │   ├── env.py
 │   │   ├── script.py.mako
@@ -102,19 +110,35 @@ lingwa/
 | NLP (Phase 1) | spaCy |
 | TTS (Phase 2) | Coqui TTS |
 
+## API Documentation
+
+FastAPI serves interactive docs automatically (no extra dependencies required):
+
+| UI | URL |
+|---|---|
+| Swagger UI | `http://localhost:8000/docs` |
+| ReDoc | `http://localhost:8000/redoc` |
+| OpenAPI JSON | `http://localhost:8000/openapi.json` |
+
 ## Authentication Flow (Phase 0.3)
 
-### Email sign-up
-1. `POST /auth/signup` — create unverified user, send verification email
-2. `POST /auth/verify-email` — validate token
-3. `POST /auth/set-password` — hash password, mark verified, issue JWT
+### Email sign-up (3-step)
+1. `POST /auth/register` — create unverified user, send verification email
+2. `GET /auth/check-verification-token?token=…` — validate token expiry (frontend checks before showing password form)
+3. `POST /auth/complete-registration` — set name + password, mark verified, issue JWT
+
+### Resend verification
+- `POST /auth/resend-verification` — re-issue token and resend email (handles expired links)
 
 ### Google OAuth
-1. `GET /auth/google` — redirect to Google consent
-2. `GET /auth/google/callback` — exchange code, upsert user, issue JWT
+1. `GET /auth/google/login` — redirect to Google consent screen
+2. `GET /auth/google/callback?code=…` — exchange code, upsert/create user, redirect to frontend with JWT
 
 ### Email login
 - `POST /auth/login` — validate credentials, return JWT
+
+### Current user
+- `GET /auth/me` — return authenticated user profile (requires `Authorization: Bearer <token>`)
 
 ## Configuration
 
