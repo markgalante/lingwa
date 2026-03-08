@@ -65,12 +65,17 @@ export function WordCard({ word, translation, onSelect }: Props) {
 - Use the native `fetch` API or axios — be consistent with what is already in the codebase
 - Always handle loading and error states explicitly in the UI
 
-## Routing
+## File structure
 
-- Use React Router v6+ if routing is needed
-- Page-level components live in `frontend/src/pages/`
-- Shared/reusable components live in `frontend/src/components/`
-- Feature-specific components live in `frontend/src/features/<feature-name>/`
+Refer to the `frontend-architecture` skill for the canonical directory structure. Key rules:
+
+- `pages/<section>/` — group pages by section, not flat (`auth/`, `main/`, etc.)
+- `components/<feature>/` — group components by the feature they serve
+- `context/<feature>/` — each feature gets a subdirectory with a `*Context.tsx` (provider + types) and a `use*.ts` (hook) file
+- `hooks/` — shared hooks used across multiple unrelated features
+- `features/<name>/` — self-contained feature components not shared elsewhere
+
+**When you add, move, or remove files, update the `frontend-architecture` skill to reflect the new structure.**
 
 ## TypeScript rules
 
@@ -83,6 +88,19 @@ export function WordCard({ word, translation, onSelect }: Props) {
 - All interactive elements must have accessible labels (`aria-label` or visible text)
 - Use semantic HTML (`<button>`, `<nav>`, `<main>`, not `<div onClick>`)
 - Keyboard navigation must work for the quiz (Tab to focus, Enter/Space to select)
+
+## useEffect dependency arrays
+
+When a `useEffect` must run only once on mount and including deps would cause instability (e.g. unstable object references like `searchParams`), use an empty array with a suppression comment:
+
+```tsx
+useEffect(() => {
+  // intentionally runs once — searchParams is not a stable reference
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+```
+
+Do **not** add unstable deps just to satisfy the linter if mount-only semantics are already enforced (e.g. via a `useRef` guard).
 
 ## Linting
 

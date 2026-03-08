@@ -51,7 +51,18 @@ Use `import * as React from 'react'` for all React imports, then access hooks an
 
 ## Common Patterns
 
-[Document common patterns and best practices as they emerge]
+### Intentional empty dependency arrays
+
+When a `useEffect` must run only once on mount and including deps would cause instability (e.g. unstable object references like `searchParams`), use an empty array with a suppression comment rather than adding the unstable deps:
+
+```tsx
+useEffect(() => {
+  // intentionally runs once — searchParams is not a stable reference
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+```
+
+Do **not** add unstable deps just to satisfy the linter if a `useRef` guard or mount-only semantics are already in place.
 
 ## FAQ
 

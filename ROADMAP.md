@@ -62,11 +62,22 @@
 - `POST /auth/login`: validates e-mail + password, returns a JWT.
 
 ### 0.4 – Frontend auth screens
-- [ ] **Sign-up page**: e-mail input + "Continue with Google" button
-- [ ] **Check-your-inbox page**: shown after step 1 of the email flow
+> Email verification is deferred to Phase 0.6. Registration creates a verified account directly for now.
+- [x] **Google OAuth**: "Continue with Google" button → full OAuth flow → JWT issued
+- [x] **Sign-up page**: name + e-mail + password → account created, JWT issued, redirected to dashboard
+- [x] **Login page**: e-mail + password for returning users
+
+### 0.5 – Email provider integration
+- [ ] Choose and configure an email provider (e.g. Resend, SendGrid, Mailgun)
+- [ ] Add provider credentials to `.env` and `config.py`
+- [ ] Create a `send_email` utility in the backend
+
+### 0.6 – Email verification flow (deferred)
+> Requires Phase 0.5 to be complete.
+- [ ] `POST /auth/signup`: create unverified account, generate token, send verification e-mail
+- [ ] **Check-your-inbox page**: shown after signup
 - [ ] **Verify & set-password page**: token validated on load; password input to complete signup
-- [ ] **Login page**: e-mail + password for returning users
-- [ ] Store the JWT in `localStorage` (or a secure cookie) and attach it to API requests via an Axios/fetch interceptor
+- [ ] Update `POST /auth/login` to reject unverified accounts
 
 ---
 

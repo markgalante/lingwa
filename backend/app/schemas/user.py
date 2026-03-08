@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 from app.schemas.language import LanguageRead
 
@@ -9,6 +9,22 @@ from app.schemas.language import LanguageRead
 class UserCreate(BaseModel):
     email: EmailStr
     name: str | None = None
+
+
+class UserRegister(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8)
+    name: str | None = None
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
 
 
 class UserUpdate(BaseModel):
