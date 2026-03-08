@@ -107,6 +107,41 @@ async def create_google_user(
     return user
 
 
+async def get_by_reset_token(db: AsyncSession, token: str) -> User | None:
+    result = await db.execute(
+        select(User).where(User.password_reset_token == token).options(selectinload(User.languages))
+    )
+    return result.scalar_one_or_none()
+
+
+async def set_reset_token(
+    db: AsyncSession,
+    user: User,
+    *,
+    token: str,
+    expires: datetime,
+) -> User:
+    user.password_reset_token = token
+    user.password_reset_token_expires = expires
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+
+async def reset_password(
+    db: AsyncSession,
+    user: User,
+    *,
+    hashed_password: str,
+) -> User:
+    user.hashed_password = hashed_password
+    user.password_reset_token = None
+    user.password_reset_token_expires = None
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+
 async def update_google_fields(
     db: AsyncSession,
     user: User,
