@@ -1,9 +1,10 @@
 import {useState} from 'react';
 import {useNavigate, Link} from 'react-router-dom';
+import {type AnyFieldApi, type AnyFormState} from '@tanstack/react-form';
 import {api} from '../../api/client';
 import {useAppForm} from '../../hooks/useAppForm';
 import {FormField} from '../../components/ui/FormField';
-import {signUpSchema} from '../../schemas/auth';
+import {signUpSchema, type SignUpValues} from '../../schemas/auth';
 
 export function SignUpPage() {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ export function SignUpPage() {
   const form = useAppForm({
     defaultValues: {email: ''},
     validators: {onSubmit: signUpSchema},
-    onSubmit: async ({value}) => {
+    onSubmit: async ({value}: {value: SignUpValues}) => {
       setServerError(null);
       try {
         await api.post('/auth/register', {email: value.email});
@@ -80,7 +81,7 @@ export function SignUpPage() {
           className="flex flex-col gap-4"
         >
           <form.Field name="email">
-            {(field) => (
+            {(field: AnyFieldApi) => (
               <FormField
                 field={field}
                 label="Email"
@@ -93,8 +94,8 @@ export function SignUpPage() {
 
           {serverError && <p className="text-red-400 text-sm">{serverError}</p>}
 
-          <form.Subscribe selector={(state) => state.isSubmitting}>
-            {(isSubmitting) => (
+          <form.Subscribe selector={(state: AnyFormState) => state.isSubmitting}>
+            {(isSubmitting: boolean) => (
               <button
                 type="submit"
                 disabled={isSubmitting}

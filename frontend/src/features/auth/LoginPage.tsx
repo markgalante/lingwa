@@ -1,11 +1,11 @@
 import {useState} from 'react';
 import {useNavigate, Link} from 'react-router-dom';
+import {type AnyFieldApi, type AnyFormState} from '@tanstack/react-form';
 import {api} from '../../api/client';
 import {useAuth} from '../../context/auth/useAuth';
 import {useAppForm} from '../../hooks/useAppForm';
 import {FormField} from '../../components/ui/FormField';
-import {loginSchema} from '../../schemas/auth';
-
+import {loginSchema, type LoginValues} from '../../schemas/auth';
 interface TokenResponse {
   access_token: string;
 }
@@ -18,7 +18,7 @@ export function LoginPage() {
   const form = useAppForm({
     defaultValues: {email: '', password: ''},
     validators: {onSubmit: loginSchema},
-    onSubmit: async ({value}) => {
+    onSubmit: async ({value}: {value: LoginValues}) => {
       setServerError(null);
       try {
         const {access_token} = await api.post<TokenResponse>('/auth/login', {
@@ -64,7 +64,7 @@ export function LoginPage() {
           className="flex flex-col gap-4"
         >
           <form.Field name="email">
-            {(field) => (
+            {(field: AnyFieldApi) => (
               <FormField
                 field={field}
                 label="Email"
@@ -76,7 +76,7 @@ export function LoginPage() {
           </form.Field>
 
           <form.Field name="password">
-            {(field) => (
+            {(field: AnyFieldApi) => (
               <FormField
                 field={field}
                 label="Password"
@@ -89,8 +89,8 @@ export function LoginPage() {
 
           {serverError && <p className="text-red-400 text-sm">{serverError}</p>}
 
-          <form.Subscribe selector={(state) => state.isSubmitting}>
-            {(isSubmitting) => (
+          <form.Subscribe selector={(state: AnyFormState) => state.isSubmitting}>
+            {(isSubmitting: boolean) => (
               <button
                 type="submit"
                 disabled={isSubmitting}
