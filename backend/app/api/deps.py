@@ -24,8 +24,8 @@ async def get_current_user(
 
     try:
         user_id = uuid.UUID(user_id_str)
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    except ValueError as err:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token") from err
 
     user = await crud_user.get_by_id(db, user_id)
     if not user:

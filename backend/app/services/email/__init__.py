@@ -1,6 +1,6 @@
+from app.core.config import settings
 from app.services.email.base import EmailService
 from app.services.email.resend_service import ResendEmailService
-from app.core.config import settings
 
 
 def get_email_service() -> EmailService:
