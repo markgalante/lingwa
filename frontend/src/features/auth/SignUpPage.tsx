@@ -93,14 +93,14 @@ export function SignUpPage() {
 
           {serverError && <p className="text-red-400 text-sm">{serverError}</p>}
 
-          <form.Subscribe>
-            {(state) => (
+          <form.Subscribe selector={(state) => state.isSubmitting}>
+            {(isSubmitting) => (
               <button
                 type="submit"
-                disabled={state.isSubmitting}
+                disabled={isSubmitting}
                 className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-sm transition-colors"
               >
-                {state.isSubmitting ? 'Sending…' : 'Continue with email'}
+                {isSubmitting ? 'Sending…' : 'Continue with email'}
               </button>
             )}
           </form.Subscribe>
