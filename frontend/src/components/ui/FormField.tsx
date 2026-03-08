@@ -1,3 +1,11 @@
+function getErrorMessage(error: unknown): string {
+  if (typeof error === 'string') return error
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    return String((error as {message: unknown}).message)
+  }
+  return String(error)
+}
+
 type FieldLike = {
   name: string
   state: {
@@ -51,7 +59,7 @@ export function FormField({
           hasError ? 'border-red-500' : 'border-gray-700',
         ].join(' ')}
       />
-      {hasError && <p className="text-red-400 text-xs">{String(errors[0])}</p>}
+      {hasError && <p className="text-red-400 text-xs">{getErrorMessage(errors[0])}</p>}
     </div>
   )
 }
