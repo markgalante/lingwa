@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     google_client_secret: str = ""
     google_redirect_uri: str = "http://localhost:8000/auth/google/callback"
 
+    # Email (Resend)
+    resend_api_key: str = ""
+    resend_from_email: str = "noreply@lingwa.app"
+
     # App
     frontend_url: str = "http://localhost:5173"
 
