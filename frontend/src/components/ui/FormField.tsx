@@ -1,32 +1,32 @@
 function getErrorMessage(error: unknown): string {
-  if (typeof error === 'string') return error
+  if (typeof error === 'string') return error;
   if (typeof error === 'object' && error !== null && 'message' in error) {
-    return String((error as {message: unknown}).message)
+    return String((error as {message: unknown}).message);
   }
-  return String(error)
+  return String(error);
 }
 
 type FieldLike = {
-  name: string
+  name: string;
   state: {
-    value: unknown
+    value: unknown;
     meta: {
-      isTouched: boolean
-      errors: Array<unknown>
-    }
-  }
-  handleBlur: () => void
-  handleChange: (value: string) => void
-}
+      isTouched: boolean;
+      errors: Array<unknown>;
+    };
+  };
+  handleBlur: () => void;
+  handleChange: (value: string) => void;
+};
 
 type Props = {
-  field: FieldLike
-  label: string
-  type?: string
-  placeholder?: string
-  autoComplete?: string
-  autoFocus?: boolean
-}
+  field: FieldLike;
+  label: string;
+  type?: string;
+  placeholder?: string;
+  autoComplete?: string;
+  autoFocus?: boolean;
+};
 
 export function FormField({
   field,
@@ -36,8 +36,8 @@ export function FormField({
   autoComplete,
   autoFocus,
 }: Props) {
-  const errors = field.state.meta.errors
-  const hasError = field.state.meta.isTouched && errors.length > 0
+  const errors = field.state.meta.errors;
+  const hasError = field.state.meta.isTouched && errors.length > 0;
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -61,5 +61,5 @@ export function FormField({
       />
       {hasError && <p className="text-red-400 text-xs">{getErrorMessage(errors[0])}</p>}
     </div>
-  )
+  );
 }

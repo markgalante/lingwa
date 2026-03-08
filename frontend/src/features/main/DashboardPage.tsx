@@ -1,7 +1,7 @@
-import {useAuth} from '../../context/auth/useAuth'
+import {useAuth} from '../../context/auth/useAuth';
 
 export default function DashboardPage() {
-  const {user, logout} = useAuth()
+  const {user, logout} = useAuth();
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -9,7 +9,12 @@ export default function DashboardPage() {
         <h1 className="text-xl font-bold tracking-tight">Lingwa</h1>
         <div className="flex items-center gap-4">
           {user?.avatar_url && (
-            <img src={user.avatar_url} alt={user.name ?? ''} className="w-8 h-8 rounded-full" referrerPolicy="no-referrer" />
+            <img
+              src={user.avatar_url}
+              alt={user.name ?? ''}
+              className="w-8 h-8 rounded-full"
+              referrerPolicy="no-referrer"
+            />
           )}
           <span className="text-sm text-gray-300">{user?.name ?? user?.email}</span>
           <button
@@ -28,5 +33,5 @@ export default function DashboardPage() {
         <p className="mt-2 text-gray-400">Your dashboard is on its way.</p>
       </main>
     </div>
-  )
+  );
 }
