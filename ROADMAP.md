@@ -75,21 +75,20 @@
 - [x] `POST /auth/register`: create unverified account (email only), generate token, send verification e-mail
 - [x] **Check-your-inbox page**: shown after signup
 - [x] **Verify & complete-registration page**: token read from link; password + name form to complete signup (`POST /auth/complete-registration`)
-- [ ] Update `POST /auth/login` to reject unverified accounts
 
 ### 0.7 – Password recovery flow
 > Requires Phase 0.5 to be complete.
 
 #### Backend
-- [ ] `POST /auth/forgot-password`: accepts an e-mail address; if the account exists and has a password (i.e. is not Google-only), generate a short-lived reset token (e.g. 1 hour), store its hash in the database, and send a password-reset e-mail with a link containing the token
-- [ ] `POST /auth/reset-password`: accepts the reset token and a new password; validates the token (existence, hash match, expiry), hashes the new password, saves it, and invalidates the token
-- [ ] Add `password_reset_token` (nullable string) and `password_reset_token_expires` (nullable datetime) fields to the `User` model and a corresponding Alembic migration
+- [x] `POST /auth/forgot-password`: accepts an e-mail address; if the account exists and has a password (i.e. is not Google-only), generate a short-lived reset token (e.g. 1 hour), store its hash in the database, and send a password-reset e-mail with a link containing the token
+- [x] `POST /auth/reset-password`: accepts the reset token and a new password; validates the token (existence, hash match, expiry), hashes the new password, saves it, and invalidates the token
+- [x] Add `password_reset_token` (nullable string) and `password_reset_token_expires` (nullable datetime) fields to the `User` model and a corresponding Alembic migration
 
 #### Frontend
-- [ ] **Forgot-password page** (`/forgot-password`): e-mail input + submit button; on success show a "check your inbox" confirmation message
-- [ ] **Reset-password page** (`/reset-password?token=…`): reads the token from the query string; shows a new-password + confirm-password form; on success redirects to login with a success toast
-- [ ] Add a "Forgot password?" link on the login page pointing to `/forgot-password`
-- [ ] Handle error states: invalid/expired token (prompt user to request a new link), Google-only account (inform user no password is set)
+- [x] **Forgot-password page** (`/forgot-password`): e-mail input + submit button; on success show a "check your inbox" confirmation message
+- [x] **Reset-password page** (`/reset-password?token=…`): reads the token from the query string; shows a new-password + confirm-password form; on success redirects to login with a success toast
+- [x] Add a "Forgot password?" link on the login page pointing to `/forgot-password`
+- [x] Handle error states: invalid/expired token (prompt user to request a new link), Google-only account (inform user no password is set)
 
 ---
 
