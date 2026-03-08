@@ -96,10 +96,10 @@
 
 **Goal**: Accept a pasted article in the user's target language and return structured vocabulary data.
 
-### 1.1 – FastAPI skeleton
-- [ ] `POST /api/article` – accepts raw text and a `language_code`, returns extracted vocabulary
-- [ ] `GET /api/health` – simple liveness check
-- [ ] Add CORS middleware so the React dev server can call the API
+### 1.1 – FastAPI skeleton ✓
+- [x] `POST /api/article` – accepts raw text and a `language_code`, returns extracted vocabulary
+- [x] `GET /api/health` – simple liveness check
+- [x] Add CORS middleware so the React dev server can call the API
 
 ### 1.2 – spaCy integration
 - [ ] Install `spacy`; download the language model for the active language (e.g. `nl_core_news_sm` for Dutch)

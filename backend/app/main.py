@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 
+from app.api.article import router as article_router
 from app.api.auth import router as auth_router
 
 tags_metadata = [
@@ -32,6 +33,7 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+app.include_router(article_router)
 
 
 @app.get("/api/health", summary="Health check", tags=["health"])
