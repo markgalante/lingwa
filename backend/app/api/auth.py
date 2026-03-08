@@ -22,7 +22,7 @@ GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 
-@router.get("/google/login")
+@router.get("/google/login", summary="Initiate Google OAuth", description="Redirects the browser to Google's consent screen.")
 async def google_login() -> RedirectResponse:
     params = {
         "client_id": settings.google_client_id,
@@ -35,7 +35,11 @@ async def google_login() -> RedirectResponse:
     return RedirectResponse(url=f"{GOOGLE_AUTH_URL}?{query}")
 
 
-@router.get("/google/callback")
+@router.get(
+    "/google/callback",
+    summary="Google OAuth callback",
+    description="Exchanges the authorization code for tokens, upserts the user, and redirects to the frontend with a JWT.",
+)
 async def google_callback(
     code: str,
     db: AsyncSession = Depends(get_db),
@@ -98,7 +102,13 @@ async def google_callback(
     )
 
 
-@router.post("/register", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register",
+    response_model=MessageResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Start email registration",
+    description="Creates an unverified account and sends a verification email. Step 1 of 3.",
+)
 async def register(body: UserRegister, db: AsyncSession = Depends(get_db)) -> MessageResponse:
     existing = await crud_user.get_by_email(db, body.email)
     if existing:
@@ -119,7 +129,12 @@ async def register(body: UserRegister, db: AsyncSession = Depends(get_db)) -> Me
     return MessageResponse(message="Check your email to verify your account")
 
 
-@router.get("/check-verification-token", response_model=MessageResponse)
+@router.get(
+    "/check-verification-token",
+    response_model=MessageResponse,
+    summary="Validate verification token",
+    description="Checks that the email verification token exists and has not expired. Step 2 of 3.",
+)
 async def check_verification_token(token: str, db: AsyncSession = Depends(get_db)) -> MessageResponse:
     user = await crud_user.get_by_verification_token(db, token)
 
@@ -132,7 +147,12 @@ async def check_verification_token(token: str, db: AsyncSession = Depends(get_db
     return MessageResponse(message="Token is valid")
 
 
-@router.post("/complete-registration", response_model=TokenResponse)
+@router.post(
+    "/complete-registration",
+    response_model=TokenResponse,
+    summary="Complete email registration",
+    description="Sets the user's name and password, marks the account verified, and returns a JWT. Step 3 of 3.",
+)
 async def complete_registration(
     body: CompleteRegistration, db: AsyncSession = Depends(get_db)
 ) -> TokenResponse:
@@ -150,7 +170,12 @@ async def complete_registration(
     return TokenResponse(access_token=create_access_token(str(user.id)))
 
 
-@router.post("/resend-verification", response_model=MessageResponse)
+@router.post(
+    "/resend-verification",
+    response_model=MessageResponse,
+    summary="Resend verification email",
+    description="Issues a fresh token and resends the verification email. Use when the original link has expired.",
+)
 async def resend_verification(body: UserRegister, db: AsyncSession = Depends(get_db)) -> MessageResponse:
     user = await crud_user.get_by_email(db, body.email)
 
@@ -165,7 +190,12 @@ async def resend_verification(body: UserRegister, db: AsyncSession = Depends(get
     return MessageResponse(message="Verification email sent")
 
 
-@router.post("/login", response_model=TokenResponse)
+@router.post(
+    "/login",
+    response_model=TokenResponse,
+    summary="Email/password login",
+    description="Validates credentials and returns a JWT access token.",
+)
 async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)) -> TokenResponse:
     user = await crud_user.get_by_email(db, body.email)
     if not user or not user.hashed_password or not verify_password(body.password, user.hashed_password):
@@ -174,6 +204,11 @@ async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)) -> Token
     return TokenResponse(access_token=create_access_token(str(user.id)))
 
 
-@router.get("/me", response_model=UserRead)
+@router.get(
+    "/me",
+    response_model=UserRead,
+    summary="Current user",
+    description="Returns the authenticated user's profile. Requires `Authorization: Bearer <token>`.",
+)
 async def get_me(current_user: User = Depends(get_current_user)) -> User:
     return current_user
