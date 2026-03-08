@@ -55,6 +55,20 @@ async def create_email_user(
     return user
 
 
+async def set_verification_token(
+    db: AsyncSession,
+    user: User,
+    *,
+    token: str,
+    expires: datetime,
+) -> User:
+    user.verification_token = token
+    user.verification_token_expires = expires
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+
 async def complete_registration(
     db: AsyncSession,
     user: User,

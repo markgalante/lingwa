@@ -119,6 +119,19 @@ async def register(body: UserRegister, db: AsyncSession = Depends(get_db)) -> Me
     return MessageResponse(message="Check your email to verify your account")
 
 
+@router.get("/check-verification-token", response_model=MessageResponse)
+async def check_verification_token(token: str, db: AsyncSession = Depends(get_db)) -> MessageResponse:
+    user = await crud_user.get_by_verification_token(db, token)
+
+    if not user or not user.verification_token_expires:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid verification link")
+
+    if datetime.now(UTC) > user.verification_token_expires.replace(tzinfo=UTC):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification link has expired")
+
+    return MessageResponse(message="Token is valid")
+
+
 @router.post("/complete-registration", response_model=TokenResponse)
 async def complete_registration(
     body: CompleteRegistration, db: AsyncSession = Depends(get_db)
@@ -135,6 +148,21 @@ async def complete_registration(
         db, user, name=body.name, hashed_password=hash_password(body.password)
     )
     return TokenResponse(access_token=create_access_token(str(user.id)))
+
+
+@router.post("/resend-verification", response_model=MessageResponse)
+async def resend_verification(body: UserRegister, db: AsyncSession = Depends(get_db)) -> MessageResponse:
+    user = await crud_user.get_by_email(db, body.email)
+
+    if not user or user.is_verified or user.google_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No pending account found for that email")
+
+    token = secrets.token_urlsafe(32)
+    expires = datetime.now(UTC) + timedelta(hours=24)
+    await crud_user.set_verification_token(db, user, token=token, expires=expires)
+    await get_email_service().send_verification_email(user.email, token)
+
+    return MessageResponse(message="Verification email sent")
 
 
 @router.post("/login", response_model=TokenResponse)
