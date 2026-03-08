@@ -61,23 +61,35 @@
 #### Email login (returning users)
 - `POST /auth/login`: validates e-mail + password, returns a JWT.
 
-### 0.4 – Frontend auth screens
-> Email verification is deferred to Phase 0.6. Registration creates a verified account directly for now.
+### 0.4 – Frontend auth screens ✓
 - [x] **Google OAuth**: "Continue with Google" button → full OAuth flow → JWT issued
-- [x] **Sign-up page**: name + e-mail + password → account created, JWT issued, redirected to dashboard
+- [x] **Sign-up page**: e-mail input → verification email sent → check-your-inbox screen
 - [x] **Login page**: e-mail + password for returning users
 
-### 0.5 – Email provider integration
-- [ ] Choose and configure an email provider (e.g. Resend, SendGrid, Mailgun)
-- [ ] Add provider credentials to `.env` and `config.py`
-- [ ] Create a `send_email` utility in the backend
+### 0.5 – Email provider integration ✓
+- [x] Choose and configure an email provider (Resend)
+- [x] Add provider credentials to `.env` and `config.py`
+- [x] Create a `send_email` utility in the backend
 
-### 0.6 – Email verification flow (deferred)
-> Requires Phase 0.5 to be complete.
-- [ ] `POST /auth/signup`: create unverified account, generate token, send verification e-mail
-- [ ] **Check-your-inbox page**: shown after signup
-- [ ] **Verify & set-password page**: token validated on load; password input to complete signup
+### 0.6 – Email verification flow ✓
+- [x] `POST /auth/register`: create unverified account (email only), generate token, send verification e-mail
+- [x] **Check-your-inbox page**: shown after signup
+- [x] **Verify & complete-registration page**: token read from link; password + name form to complete signup (`POST /auth/complete-registration`)
 - [ ] Update `POST /auth/login` to reject unverified accounts
+
+### 0.7 – Password recovery flow
+> Requires Phase 0.5 to be complete.
+
+#### Backend
+- [ ] `POST /auth/forgot-password`: accepts an e-mail address; if the account exists and has a password (i.e. is not Google-only), generate a short-lived reset token (e.g. 1 hour), store its hash in the database, and send a password-reset e-mail with a link containing the token
+- [ ] `POST /auth/reset-password`: accepts the reset token and a new password; validates the token (existence, hash match, expiry), hashes the new password, saves it, and invalidates the token
+- [ ] Add `password_reset_token` (nullable string) and `password_reset_token_expires` (nullable datetime) fields to the `User` model and a corresponding Alembic migration
+
+#### Frontend
+- [ ] **Forgot-password page** (`/forgot-password`): e-mail input + submit button; on success show a "check your inbox" confirmation message
+- [ ] **Reset-password page** (`/reset-password?token=…`): reads the token from the query string; shows a new-password + confirm-password form; on success redirects to login with a success toast
+- [ ] Add a "Forgot password?" link on the login page pointing to `/forgot-password`
+- [ ] Handle error states: invalid/expired token (prompt user to request a new link), Google-only account (inform user no password is set)
 
 ---
 
