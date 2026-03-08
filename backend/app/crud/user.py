@@ -39,7 +39,7 @@ async def create_email_user(
         email=email,
         hashed_password=hashed_password,
         name=name,
-        is_verified=True,
+        is_verified=False,
     )
     db.add(user)
     await db.commit()
