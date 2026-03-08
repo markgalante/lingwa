@@ -1,33 +1,21 @@
 import {useState} from 'react'
 import {useNavigate, Link} from 'react-router-dom'
 import {api} from '../../api/client'
-import {useAuth} from '../../context/auth/useAuth'
-
-interface TokenResponse {
-  access_token: string
-}
 
 export default function SignUpPage() {
-  const {login} = useAuth()
   const navigate = useNavigate()
-  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setIsLoading(true)
     try {
-      const {access_token} = await api.post<TokenResponse>('/auth/register', {
-        email,
-        password,
-        name: name || null,
-      })
-      await login(access_token)
-      navigate('/dashboard', {replace: true})
+      await api.post('/auth/register', {email})
+      setSubmitted(true)
     } catch (err) {
       if (err instanceof Error && err.message.includes('409')) {
         setError('An account with this email already exists.')
@@ -37,6 +25,26 @@ export default function SignUpPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (submitted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-950">
+        <div className="w-full max-w-sm p-8 rounded-2xl bg-gray-900 shadow-xl flex flex-col gap-4 text-center">
+          <h1 className="text-2xl font-bold text-white">Check your email</h1>
+          <p className="text-gray-400 text-sm">
+            We sent a verification link to <span className="text-white">{email}</span>.
+            Click it to finish setting up your account.
+          </p>
+          <button
+            onClick={() => navigate('/login')}
+            className="mt-2 text-indigo-400 hover:text-indigo-300 text-sm"
+          >
+            Back to sign in
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -63,19 +71,6 @@ export default function SignUpPage() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="name" className="text-sm text-gray-300">Name <span className="text-gray-500">(optional)</span></label>
-            <input
-              id="name"
-              type="text"
-              autoComplete="name"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500"
-              placeholder="Your name"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
             <label htmlFor="email" className="text-sm text-gray-300">Email</label>
             <input
               id="email"
@@ -89,21 +84,6 @@ export default function SignUpPage() {
             />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="password" className="text-sm text-gray-300">Password</label>
-            <input
-              id="password"
-              type="password"
-              required
-              autoComplete="new-password"
-              minLength={8}
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500"
-              placeholder="Min. 8 characters"
-            />
-          </div>
-
           {error && <p className="text-red-400 text-sm">{error}</p>}
 
           <button
@@ -111,7 +91,7 @@ export default function SignUpPage() {
             disabled={isLoading}
             className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-sm transition-colors"
           >
-            {isLoading ? 'Creating account…' : 'Create account'}
+            {isLoading ? 'Sending…' : 'Continue with email'}
           </button>
         </form>
 
