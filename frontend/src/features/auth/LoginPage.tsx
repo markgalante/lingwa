@@ -1,37 +1,36 @@
-import {useState} from 'react'
-import {useNavigate, Link} from 'react-router-dom'
-import {api} from '../../api/client'
-import {useAuth} from '../../context/auth/useAuth'
-import {useAppForm} from '../../hooks/useAppForm'
-import {FormField} from '../../components/ui/FormField'
-import {loginSchema} from '../../schemas/auth'
-
+import {useState} from 'react';
+import {useNavigate, Link} from 'react-router-dom';
+import {api} from '../../api/client';
+import {useAuth} from '../../context/auth/useAuth';
+import {useAppForm} from '../../hooks/useAppForm';
+import {FormField} from '../../components/ui/FormField';
+import {loginSchema, type LoginValues} from '../../schemas/auth';
 interface TokenResponse {
-  access_token: string
+  access_token: string;
 }
 
 export function LoginPage() {
-  const {login} = useAuth()
-  const navigate = useNavigate()
-  const [serverError, setServerError] = useState<string | null>(null)
+  const {login} = useAuth();
+  const navigate = useNavigate();
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const form = useAppForm({
     defaultValues: {email: '', password: ''},
     validators: {onSubmit: loginSchema},
-    onSubmit: async ({value}) => {
-      setServerError(null)
+    onSubmit: async ({value}: {value: LoginValues}) => {
+      setServerError(null);
       try {
         const {access_token} = await api.post<TokenResponse>('/auth/login', {
           email: value.email,
           password: value.password,
-        })
-        await login(access_token)
-        navigate('/dashboard', {replace: true})
+        });
+        await login(access_token);
+        navigate('/dashboard', {replace: true});
       } catch {
-        setServerError('Invalid email or password.')
+        setServerError('Invalid email or password.');
       }
     },
-  })
+  });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-950">
@@ -57,9 +56,9 @@ export function LoginPage() {
 
         <form
           onSubmit={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            form.handleSubmit()
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
           }}
           className="flex flex-col gap-4"
         >
@@ -89,14 +88,14 @@ export function LoginPage() {
 
           {serverError && <p className="text-red-400 text-sm">{serverError}</p>}
 
-          <form.Subscribe selector={(state) => state.isSubmitting}>
-            {(isSubmitting) => (
+          <form.Subscribe>
+            {(state) => (
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={state.isSubmitting}
                 className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-sm transition-colors"
               >
-                {isSubmitting ? 'Signing in…' : 'Sign in'}
+                {state.isSubmitting ? 'Signing in…' : 'Sign in'}
               </button>
             )}
           </form.Subscribe>
@@ -110,10 +109,10 @@ export function LoginPage() {
         </p>
       </div>
     </div>
-  )
+  );
 }
 
-export default LoginPage
+export default LoginPage;
 
 function GoogleIcon() {
   return (
@@ -135,5 +134,5 @@ function GoogleIcon() {
         fill="#EA4335"
       />
     </svg>
-  )
+  );
 }

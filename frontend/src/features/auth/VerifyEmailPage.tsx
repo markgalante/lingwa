@@ -1,83 +1,83 @@
-import {useState, useEffect} from 'react'
-import {useNavigate, useSearchParams} from 'react-router-dom'
-import {api} from '../../api/client'
-import {useAuth} from '../../context/auth/useAuth'
-import {useAppForm} from '../../hooks/useAppForm'
-import {FormField} from '../../components/ui/FormField'
-import {passwordStepSchema, nameStepSchema, resendSchema} from '../../schemas/auth'
+import {useState, useEffect} from 'react';
+import {useNavigate, useSearchParams} from 'react-router-dom';
+import {api} from '../../api/client';
+import {useAuth} from '../../context/auth/useAuth';
+import {useAppForm} from '../../hooks/useAppForm';
+import {FormField} from '../../components/ui/FormField';
+import {passwordStepSchema, nameStepSchema, resendSchema} from '../../schemas/auth';
 
 interface TokenResponse {
-  access_token: string
+  access_token: string;
 }
 
-type Step = 'password' | 'name'
+type Step = 'password' | 'name';
 
 export function VerifyEmailPage() {
-  const [searchParams] = useSearchParams()
-  const {login} = useAuth()
-  const navigate = useNavigate()
+  const [searchParams] = useSearchParams();
+  const {login} = useAuth();
+  const navigate = useNavigate();
 
-  const token = searchParams.get('token')
+  const token = searchParams.get('token');
 
-  const [step, setStep] = useState<Step>('password')
-  const [password, setPassword] = useState('')
-  const [serverError, setServerError] = useState<string | null>(null)
-  const [linkExpired, setLinkExpired] = useState(!token)
-  const [checking, setChecking] = useState(!!token)
+  const [step, setStep] = useState<Step>('password');
+  const [password, setPassword] = useState('');
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [linkExpired, setLinkExpired] = useState(!token);
+  const [checking, setChecking] = useState(!!token);
 
   useEffect(() => {
-    if (!token) return
+    if (!token) return;
     api
       .get(`/auth/check-verification-token?token=${token}`)
       .catch(() => setLinkExpired(true))
-      .finally(() => setChecking(false))
+      .finally(() => setChecking(false));
     // intentionally runs once — searchParams is not a stable reference
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, []);
 
   const passwordForm = useAppForm({
     defaultValues: {password: '', confirmPassword: ''},
     validators: {onSubmit: passwordStepSchema},
     onSubmit: ({value}) => {
-      setPassword(value.password)
-      setStep('name')
+      setPassword(value.password);
+      setStep('name');
     },
-  })
+  });
 
   const nameForm = useAppForm({
     defaultValues: {name: ''},
     validators: {onSubmit: nameStepSchema},
     onSubmit: async ({value}) => {
-      setServerError(null)
+      setServerError(null);
       try {
         const {access_token} = await api.post<TokenResponse>('/auth/complete-registration', {
           token,
           name: value.name.trim(),
           password,
           confirm_password: password,
-        })
-        await login(access_token)
-        navigate('/dashboard', {replace: true})
+        });
+        await login(access_token);
+        navigate('/dashboard', {replace: true});
       } catch (err) {
         if (err instanceof Error && err.message.includes('400')) {
-          setLinkExpired(true)
+          setLinkExpired(true);
         } else {
-          setServerError('Something went wrong. Please try again.')
+          setServerError('Something went wrong. Please try again.');
         }
       }
     },
-  })
+  });
 
   if (checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-950">
         <p className="text-gray-400 text-sm">Verifying your link…</p>
       </div>
-    )
+    );
   }
 
   if (linkExpired) {
-    return <ResendForm />
+    return <ResendForm />;
   }
 
   return (
@@ -93,9 +93,9 @@ export function VerifyEmailPage() {
         {step === 'password' ? (
           <form
             onSubmit={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              passwordForm.handleSubmit()
+              e.preventDefault();
+              e.stopPropagation();
+              passwordForm.handleSubmit();
             }}
             className="flex flex-col gap-4"
           >
@@ -136,9 +136,9 @@ export function VerifyEmailPage() {
         ) : (
           <form
             onSubmit={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              nameForm.handleSubmit()
+              e.preventDefault();
+              e.stopPropagation();
+              nameForm.handleSubmit();
             }}
             className="flex flex-col gap-4"
           >
@@ -172,8 +172,8 @@ export function VerifyEmailPage() {
               <button
                 type="button"
                 onClick={() => {
-                  setStep('password')
-                  setServerError(null)
+                  setStep('password');
+                  setServerError(null);
                 }}
                 className="text-gray-500 hover:text-gray-400 text-sm"
               >
@@ -184,34 +184,34 @@ export function VerifyEmailPage() {
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default VerifyEmailPage
+export default VerifyEmailPage;
 
 function ResendForm() {
-  const [sent, setSent] = useState(false)
-  const [serverError, setServerError] = useState<string | null>(null)
+  const [sent, setSent] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const form = useAppForm({
     defaultValues: {email: ''},
     validators: {onSubmit: resendSchema},
     onSubmit: async ({value}) => {
-      setServerError(null)
+      setServerError(null);
       try {
-        await api.post('/auth/resend-verification', {email: value.email})
-        setSent(true)
+        await api.post('/auth/resend-verification', {email: value.email});
+        setSent(true);
       } catch (err) {
         if (err instanceof Error && err.message.includes('404')) {
           setServerError(
             'No pending account found for that email. Check for a typo or sign up again.'
-          )
+          );
         } else {
-          setServerError('Something went wrong. Please try again.')
+          setServerError('Something went wrong. Please try again.');
         }
       }
     },
-  })
+  });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-950">
@@ -231,9 +231,9 @@ function ResendForm() {
         ) : (
           <form
             onSubmit={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              form.handleSubmit()
+              e.preventDefault();
+              e.stopPropagation();
+              form.handleSubmit();
             }}
             className="flex flex-col gap-4"
           >
@@ -271,5 +271,5 @@ function ResendForm() {
         )}
       </div>
     </div>
-  )
+  );
 }

@@ -3,7 +3,7 @@ import {
   type FormOptions,
   type FormValidateOrFn,
   type FormAsyncValidateOrFn,
-} from '@tanstack/react-form'
+} from '@tanstack/react-form';
 
 export function useAppForm<
   TFormData,
@@ -47,5 +47,5 @@ export function useAppForm<
     TOnDynamicAsync,
     TOnServer,
     TSubmitMeta
-  >(options)
+  >(options);
 }

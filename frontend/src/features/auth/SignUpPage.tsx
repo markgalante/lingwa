@@ -1,32 +1,32 @@
-import {useState} from 'react'
-import {useNavigate, Link} from 'react-router-dom'
-import {api} from '../../api/client'
-import {useAppForm} from '../../hooks/useAppForm'
-import {FormField} from '../../components/ui/FormField'
-import {signUpSchema} from '../../schemas/auth'
+import {useState} from 'react';
+import {useNavigate, Link} from 'react-router-dom';
+import {api} from '../../api/client';
+import {useAppForm} from '../../hooks/useAppForm';
+import {FormField} from '../../components/ui/FormField';
+import {signUpSchema, type SignUpValues} from '../../schemas/auth';
 
 export function SignUpPage() {
-  const navigate = useNavigate()
-  const [submitted, setSubmitted] = useState(false)
-  const [serverError, setServerError] = useState<string | null>(null)
+  const navigate = useNavigate();
+  const [submitted, setSubmitted] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const form = useAppForm({
     defaultValues: {email: ''},
     validators: {onSubmit: signUpSchema},
-    onSubmit: async ({value}) => {
-      setServerError(null)
+    onSubmit: async ({value}: {value: SignUpValues}) => {
+      setServerError(null);
       try {
-        await api.post('/auth/register', {email: value.email})
-        setSubmitted(true)
+        await api.post('/auth/register', {email: value.email});
+        setSubmitted(true);
       } catch (err) {
         if (err instanceof Error && err.message.includes('409')) {
-          setServerError('An account with this email already exists.')
+          setServerError('An account with this email already exists.');
         } else {
-          setServerError('Something went wrong. Please try again.')
+          setServerError('Something went wrong. Please try again.');
         }
       }
     },
-  })
+  });
 
   if (submitted) {
     return (
@@ -46,7 +46,7 @@ export function SignUpPage() {
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -73,9 +73,9 @@ export function SignUpPage() {
 
         <form
           onSubmit={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            form.handleSubmit()
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
           }}
           className="flex flex-col gap-4"
         >
@@ -93,14 +93,14 @@ export function SignUpPage() {
 
           {serverError && <p className="text-red-400 text-sm">{serverError}</p>}
 
-          <form.Subscribe selector={(state) => state.isSubmitting}>
-            {(isSubmitting) => (
+          <form.Subscribe>
+            {(state) => (
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={state.isSubmitting}
                 className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-sm transition-colors"
               >
-                {isSubmitting ? 'Sending…' : 'Continue with email'}
+                {state.isSubmitting ? 'Sending…' : 'Continue with email'}
               </button>
             )}
           </form.Subscribe>
@@ -114,10 +114,10 @@ export function SignUpPage() {
         </p>
       </div>
     </div>
-  )
+  );
 }
 
-export default SignUpPage
+export default SignUpPage;
 
 function GoogleIcon() {
   return (
@@ -139,5 +139,5 @@ function GoogleIcon() {
         fill="#EA4335"
       />
     </svg>
-  )
+  );
 }
