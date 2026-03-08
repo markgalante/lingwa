@@ -1,6 +1,5 @@
 import uuid
 from datetime import datetime
-
 from typing import Self
 
 from pydantic import BaseModel, EmailStr, Field, model_validator

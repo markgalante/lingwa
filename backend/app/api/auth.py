@@ -12,7 +12,14 @@ from app.core.database import get_db
 from app.core.security import create_access_token, hash_password, verify_password
 from app.crud import user as crud_user
 from app.models.user import User
-from app.schemas.user import CompleteRegistration, LoginRequest, MessageResponse, TokenResponse, UserRead, UserRegister
+from app.schemas.user import (
+    CompleteRegistration,
+    LoginRequest,
+    MessageResponse,
+    TokenResponse,
+    UserRead,
+    UserRegister,
+)
 from app.services.email import get_email_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
