@@ -9,7 +9,7 @@ export default function DashboardPage() {
         <h1 className="text-xl font-bold tracking-tight">Lingwa</h1>
         <div className="flex items-center gap-4">
           {user?.avatar_url && (
-            <img src={user.avatar_url} alt={user.name ?? ''} className="w-8 h-8 rounded-full" />
+            <img src={user.avatar_url} alt={user.name ?? ''} className="w-8 h-8 rounded-full" referrerPolicy="no-referrer" />
           )}
           <span className="text-sm text-gray-300">{user?.name ?? user?.email}</span>
           <button
