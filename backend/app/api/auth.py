@@ -1,15 +1,19 @@
+import secrets
+from datetime import UTC, datetime, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import get_current_user
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import create_access_token, hash_password, verify_password
 from app.crud import user as crud_user
 from app.models.user import User
-from app.schemas.user import LoginRequest, TokenResponse, UserRead, UserRegister
-from app.api.deps import get_current_user
+from app.schemas.user import CompleteRegistration, LoginRequest, MessageResponse, TokenResponse, UserRead, UserRegister
+from app.services.email import get_email_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -94,17 +98,41 @@ async def google_callback(
     )
 
 
-@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-async def register(body: UserRegister, db: AsyncSession = Depends(get_db)) -> TokenResponse:
+@router.post("/register", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
+async def register(body: UserRegister, db: AsyncSession = Depends(get_db)) -> MessageResponse:
     existing = await crud_user.get_by_email(db, body.email)
     if existing:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
 
+    token = secrets.token_urlsafe(32)
+    expires = datetime.now(UTC) + timedelta(hours=24)
+
     user = await crud_user.create_email_user(
         db,
         email=body.email,
-        hashed_password=hash_password(body.password),
-        name=body.name,
+        verification_token=token,
+        verification_token_expires=expires,
+    )
+
+    await get_email_service().send_verification_email(user.email, token)
+
+    return MessageResponse(message="Check your email to verify your account")
+
+
+@router.post("/complete-registration", response_model=TokenResponse)
+async def complete_registration(
+    body: CompleteRegistration, db: AsyncSession = Depends(get_db)
+) -> TokenResponse:
+    user = await crud_user.get_by_verification_token(db, body.token)
+
+    if not user or not user.verification_token_expires:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid verification link")
+
+    if datetime.now(UTC) > user.verification_token_expires.replace(tzinfo=UTC):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification link has expired")
+
+    user = await crud_user.complete_registration(
+        db, user, name=body.name, hashed_password=hash_password(body.password)
     )
     return TokenResponse(access_token=create_access_token(str(user.id)))
 

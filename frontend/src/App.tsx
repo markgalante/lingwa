@@ -3,6 +3,7 @@ import {AuthProvider} from './context/auth/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import LoginPage from './features/auth/LoginPage';
 import AuthCallbackPage from './features/auth/AuthCallbackPage';
+import VerifyEmailPage from './features/auth/VerifyEmailPage';
 import DashboardPage from './features/main/DashboardPage';
 import SignUpPage from './features/auth/SignUpPage';
 
@@ -14,6 +15,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route
             path="/dashboard"
             element={

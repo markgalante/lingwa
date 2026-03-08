@@ -1,7 +1,9 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, Field
+from typing import Self
+
+from pydantic import BaseModel, EmailStr, Field, model_validator
 
 from app.schemas.language import LanguageRead
 
@@ -13,8 +15,19 @@ class UserCreate(BaseModel):
 
 class UserRegister(BaseModel):
     email: EmailStr
+
+
+class CompleteRegistration(BaseModel):
+    token: str
+    name: str = Field(min_length=1, max_length=200)
     password: str = Field(min_length=8)
-    name: str | None = None
+    confirm_password: str
+
+    @model_validator(mode="after")
+    def passwords_match(self) -> Self:
+        if self.password != self.confirm_password:
+            raise ValueError("Passwords do not match")
+        return self
 
 
 class LoginRequest(BaseModel):
@@ -25,6 +38,10 @@ class LoginRequest(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class MessageResponse(BaseModel):
+    message: str
 
 
 class UserUpdate(BaseModel):
