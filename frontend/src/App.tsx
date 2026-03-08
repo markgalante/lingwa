@@ -4,6 +4,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import LoginPage from './features/auth/LoginPage';
 import AuthCallbackPage from './features/auth/AuthCallbackPage';
 import DashboardPage from './features/main/DashboardPage';
+import SignUpPage from './features/auth/SignUpPage';
 
 export default function App() {
   return (
@@ -11,6 +12,7 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route
             path="/dashboard"
