@@ -4,7 +4,8 @@ import {api} from '../../api/client';
 import {useAuth} from '../../context/auth/useAuth';
 import {useAppForm} from '../../hooks/useAppForm';
 import {FormField} from '../../components/ui/FormField';
-import {loginSchema, type LoginValues} from '../../schemas/auth';
+import {loginSchema} from '../../schemas/auth';
+
 interface TokenResponse {
   access_token: string;
 }
@@ -17,7 +18,7 @@ export function LoginPage() {
   const form = useAppForm({
     defaultValues: {email: '', password: ''},
     validators: {onSubmit: loginSchema},
-    onSubmit: async ({value}: {value: LoginValues}) => {
+    onSubmit: async ({value}) => {
       setServerError(null);
       try {
         const {access_token} = await api.post<TokenResponse>('/auth/login', {
@@ -74,17 +75,24 @@ export function LoginPage() {
             )}
           </form.Field>
 
-          <form.Field name="password">
-            {(field) => (
-              <FormField
-                field={field}
-                label="Password"
-                type="password"
-                placeholder="••••••••"
-                autoComplete="current-password"
-              />
-            )}
-          </form.Field>
+          <div className="flex flex-col gap-1">
+            <form.Field name="password">
+              {(field) => (
+                <FormField
+                  field={field}
+                  label="Password"
+                  type="password"
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                />
+              )}
+            </form.Field>
+            <div className="flex justify-end">
+              <Link to="/forgot-password" className="text-xs text-indigo-400 hover:text-indigo-300">
+                Forgot password?
+              </Link>
+            </div>
+          </div>
 
           {serverError && <p className="text-red-400 text-sm">{serverError}</p>}
 

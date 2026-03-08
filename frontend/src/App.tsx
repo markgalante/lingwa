@@ -6,6 +6,8 @@ import AuthCallbackPage from './features/auth/AuthCallbackPage';
 import VerifyEmailPage from './features/auth/VerifyEmailPage';
 import DashboardPage from './features/main/DashboardPage';
 import SignUpPage from './features/auth/SignUpPage';
+import ForgotPasswordPage from './features/auth/ForgotPasswordPage';
+import ResetPasswordPage from './features/auth/ResetPasswordPage';
 
 export default function App() {
   return (
@@ -16,6 +18,8 @@ export default function App() {
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route
             path="/dashboard"
             element={

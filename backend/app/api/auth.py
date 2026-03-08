@@ -16,6 +16,10 @@ from app.schemas.user import (
     CompleteRegistration,
     LoginRequest,
     MessageResponse,
+    ForgotPasswordRequest,
+    LoginRequest,
+    MessageResponse,
+    ResetPasswordRequest,
     TokenResponse,
     UserRead,
     UserRegister,
@@ -195,6 +199,63 @@ async def resend_verification(body: UserRegister, db: AsyncSession = Depends(get
     await get_email_service().send_verification_email(user.email, token)
 
     return MessageResponse(message="Verification email sent")
+
+
+@router.post(
+    "/forgot-password",
+    response_model=MessageResponse,
+    summary="Request password reset",
+    description="Sends a password-reset email if the account exists and has a password set. Always returns 200 to prevent user enumeration.",
+)
+async def forgot_password(
+    body: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)
+) -> MessageResponse:
+    user = await crud_user.get_by_email(db, body.email)
+    if user and user.hashed_password:
+        token = secrets.token_urlsafe(32)
+        expires = datetime.now(UTC) + timedelta(hours=1)
+        await crud_user.set_reset_token(db, user, token=token, expires=expires)
+        await get_email_service().send_password_reset_email(user.email, token)
+    return MessageResponse(message="If that email has an account with a password, a reset link has been sent")
+
+
+@router.get(
+    "/check-reset-token",
+    response_model=MessageResponse,
+    summary="Validate password reset token",
+    description="Checks that the password reset token exists and has not expired.",
+)
+async def check_reset_token(token: str, db: AsyncSession = Depends(get_db)) -> MessageResponse:
+    user = await crud_user.get_by_reset_token(db, token)
+
+    if not user or not user.password_reset_token_expires:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid reset link")
+
+    if datetime.now(UTC) > user.password_reset_token_expires.replace(tzinfo=UTC):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Reset link has expired")
+
+    return MessageResponse(message="Token is valid")
+
+
+@router.post(
+    "/reset-password",
+    response_model=MessageResponse,
+    summary="Reset password",
+    description="Validates the reset token and sets a new password.",
+)
+async def reset_password(
+    body: ResetPasswordRequest, db: AsyncSession = Depends(get_db)
+) -> MessageResponse:
+    user = await crud_user.get_by_reset_token(db, body.token)
+
+    if not user or not user.password_reset_token_expires:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid reset link")
+
+    if datetime.now(UTC) > user.password_reset_token_expires.replace(tzinfo=UTC):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Reset link has expired")
+
+    await crud_user.reset_password(db, user, hashed_password=hash_password(body.password))
+    return MessageResponse(message="Password reset successfully")
 
 
 @router.post(
