@@ -1,6 +1,5 @@
 import {useState} from 'react';
 import {useNavigate, Link} from 'react-router-dom';
-import {type AnyFieldApi, type AnyFormState} from '@tanstack/react-form';
 import {api} from '../../api/client';
 import {useAppForm} from '../../hooks/useAppForm';
 import {FormField} from '../../components/ui/FormField';
@@ -81,7 +80,7 @@ export function SignUpPage() {
           className="flex flex-col gap-4"
         >
           <form.Field name="email">
-            {(field: AnyFieldApi) => (
+            {(field) => (
               <FormField
                 field={field}
                 label="Email"
@@ -94,14 +93,14 @@ export function SignUpPage() {
 
           {serverError && <p className="text-red-400 text-sm">{serverError}</p>}
 
-          <form.Subscribe selector={(state: AnyFormState) => state.isSubmitting}>
-            {(isSubmitting: boolean) => (
+          <form.Subscribe>
+            {(state) => (
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={state.isSubmitting}
                 className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-sm transition-colors"
               >
-                {isSubmitting ? 'Sending…' : 'Continue with email'}
+                {state.isSubmitting ? 'Sending…' : 'Continue with email'}
               </button>
             )}
           </form.Subscribe>

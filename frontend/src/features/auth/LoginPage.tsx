@@ -1,6 +1,5 @@
 import {useState} from 'react';
 import {useNavigate, Link} from 'react-router-dom';
-import {type AnyFieldApi, type AnyFormState} from '@tanstack/react-form';
 import {api} from '../../api/client';
 import {useAuth} from '../../context/auth/useAuth';
 import {useAppForm} from '../../hooks/useAppForm';
@@ -64,7 +63,7 @@ export function LoginPage() {
           className="flex flex-col gap-4"
         >
           <form.Field name="email">
-            {(field: AnyFieldApi) => (
+            {(field) => (
               <FormField
                 field={field}
                 label="Email"
@@ -76,7 +75,7 @@ export function LoginPage() {
           </form.Field>
 
           <form.Field name="password">
-            {(field: AnyFieldApi) => (
+            {(field) => (
               <FormField
                 field={field}
                 label="Password"
@@ -89,14 +88,14 @@ export function LoginPage() {
 
           {serverError && <p className="text-red-400 text-sm">{serverError}</p>}
 
-          <form.Subscribe selector={(state: AnyFormState) => state.isSubmitting}>
-            {(isSubmitting: boolean) => (
+          <form.Subscribe>
+            {(state) => (
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={state.isSubmitting}
                 className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-sm transition-colors"
               >
-                {isSubmitting ? 'Signing in…' : 'Sign in'}
+                {state.isSubmitting ? 'Signing in…' : 'Sign in'}
               </button>
             )}
           </form.Subscribe>
