@@ -2,6 +2,9 @@ import {useState, useEffect} from 'react'
 import {useNavigate, useSearchParams} from 'react-router-dom'
 import {api} from '../../api/client'
 import {useAuth} from '../../context/auth/useAuth'
+import {useAppForm} from '../../hooks/useAppForm'
+import {FormField} from '../../components/ui/FormField'
+import {passwordStepSchema, nameStepSchema, resendSchema} from '../../schemas/auth'
 
 interface TokenResponse {
   access_token: string
@@ -9,7 +12,7 @@ interface TokenResponse {
 
 type Step = 'password' | 'name'
 
-export default function VerifyEmailPage() {
+export function VerifyEmailPage() {
   const [searchParams] = useSearchParams()
   const {login} = useAuth()
   const navigate = useNavigate()
@@ -17,11 +20,8 @@ export default function VerifyEmailPage() {
   const token = searchParams.get('token')
 
   const [step, setStep] = useState<Step>('password')
-  const [name, setName] = useState('')
   const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [serverError, setServerError] = useState<string | null>(null)
   const [linkExpired, setLinkExpired] = useState(!token)
   const [checking, setChecking] = useState(!!token)
 
@@ -31,7 +31,42 @@ export default function VerifyEmailPage() {
       .get(`/auth/check-verification-token?token=${token}`)
       .catch(() => setLinkExpired(true))
       .finally(() => setChecking(false))
-  }, [token])
+    // intentionally runs once — searchParams is not a stable reference
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const passwordForm = useAppForm({
+    defaultValues: {password: '', confirmPassword: ''},
+    validators: {onSubmit: passwordStepSchema},
+    onSubmit: ({value}) => {
+      setPassword(value.password)
+      setStep('name')
+    },
+  })
+
+  const nameForm = useAppForm({
+    defaultValues: {name: ''},
+    validators: {onSubmit: nameStepSchema},
+    onSubmit: async ({value}) => {
+      setServerError(null)
+      try {
+        const {access_token} = await api.post<TokenResponse>('/auth/complete-registration', {
+          token,
+          name: value.name.trim(),
+          password,
+          confirm_password: password,
+        })
+        await login(access_token)
+        navigate('/dashboard', {replace: true})
+      } catch (err) {
+        if (err instanceof Error && err.message.includes('400')) {
+          setLinkExpired(true)
+        } else {
+          setServerError('Something went wrong. Please try again.')
+        }
+      }
+    },
+  })
 
   if (checking) {
     return (
@@ -45,40 +80,6 @@ export default function VerifyEmailPage() {
     return <ResendForm />
   }
 
-  function handlePasswordSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.')
-      return
-    }
-    setError(null)
-    setStep('name')
-  }
-
-  async function handleNameSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
-    setIsLoading(true)
-    try {
-      const {access_token} = await api.post<TokenResponse>('/auth/complete-registration', {
-        token,
-        name: name.trim(),
-        password,
-        confirm_password: confirmPassword,
-      })
-      await login(access_token)
-      navigate('/dashboard', {replace: true})
-    } catch (err) {
-      if (err instanceof Error && err.message.includes('400')) {
-        setLinkExpired(true)
-      } else {
-        setError('Something went wrong. Please try again.')
-      }
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-950">
       <div className="w-full max-w-sm p-8 rounded-2xl bg-gray-900 shadow-xl flex flex-col gap-6">
@@ -90,38 +91,40 @@ export default function VerifyEmailPage() {
         </div>
 
         {step === 'password' ? (
-          <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="password" className="text-sm text-gray-300">Password</label>
-              <input
-                id="password"
-                type="password"
-                required
-                autoFocus
-                autoComplete="new-password"
-                minLength={8}
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500"
-                placeholder="Min. 8 characters"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="confirm-password" className="text-sm text-gray-300">Confirm password</label>
-              <input
-                id="confirm-password"
-                type="password"
-                required
-                autoComplete="new-password"
-                minLength={8}
-                value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500"
-                placeholder="Repeat your password"
-              />
-            </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              passwordForm.handleSubmit()
+            }}
+            className="flex flex-col gap-4"
+          >
+            <passwordForm.Field name="password">
+              {(field) => (
+                <FormField
+                  field={field}
+                  label="Password"
+                  type="password"
+                  placeholder="Min. 8 characters"
+                  autoComplete="new-password"
+                  autoFocus
+                />
+              )}
+            </passwordForm.Field>
 
-            {error && <p className="text-red-400 text-sm">{error}</p>}
+            <passwordForm.Field name="confirmPassword">
+              {(field) => (
+                <FormField
+                  field={field}
+                  label="Confirm password"
+                  type="password"
+                  placeholder="Repeat your password"
+                  autoComplete="new-password"
+                />
+              )}
+            </passwordForm.Field>
+
+            {serverError && <p className="text-red-400 text-sm">{serverError}</p>}
 
             <button
               type="submit"
@@ -131,35 +134,47 @@ export default function VerifyEmailPage() {
             </button>
           </form>
         ) : (
-          <form onSubmit={handleNameSubmit} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="name" className="text-sm text-gray-300">Full name</label>
-              <input
-                id="name"
-                type="text"
-                required
-                autoFocus
-                autoComplete="name"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500"
-                placeholder="Your name"
-              />
-            </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              nameForm.handleSubmit()
+            }}
+            className="flex flex-col gap-4"
+          >
+            <nameForm.Field name="name">
+              {(field) => (
+                <FormField
+                  field={field}
+                  label="Full name"
+                  type="text"
+                  placeholder="Your name"
+                  autoComplete="name"
+                  autoFocus
+                />
+              )}
+            </nameForm.Field>
 
-            {error && <p className="text-red-400 text-sm">{error}</p>}
+            {serverError && <p className="text-red-400 text-sm">{serverError}</p>}
 
             <div className="flex flex-col gap-2">
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-sm transition-colors"
-              >
-                {isLoading ? 'Creating account…' : 'Create account'}
-              </button>
+              <nameForm.Subscribe selector={(state) => state.isSubmitting}>
+                {(isSubmitting) => (
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-sm transition-colors"
+                  >
+                    {isSubmitting ? 'Creating account…' : 'Create account'}
+                  </button>
+                )}
+              </nameForm.Subscribe>
               <button
                 type="button"
-                onClick={() => {setStep('password'); setError(null)}}
+                onClick={() => {
+                  setStep('password')
+                  setServerError(null)
+                }}
                 className="text-gray-500 hover:text-gray-400 text-sm"
               >
                 Back
@@ -172,29 +187,31 @@ export default function VerifyEmailPage() {
   )
 }
 
-function ResendForm() {
-  const [email, setEmail] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [sent, setSent] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+export default VerifyEmailPage
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
-    setIsLoading(true)
-    try {
-      await api.post('/auth/resend-verification', {email})
-      setSent(true)
-    } catch (err) {
-      if (err instanceof Error && err.message.includes('404')) {
-        setError('No pending account found for that email. Check for a typo or sign up again.')
-      } else {
-        setError('Something went wrong. Please try again.')
+function ResendForm() {
+  const [sent, setSent] = useState(false)
+  const [serverError, setServerError] = useState<string | null>(null)
+
+  const form = useAppForm({
+    defaultValues: {email: ''},
+    validators: {onSubmit: resendSchema},
+    onSubmit: async ({value}) => {
+      setServerError(null)
+      try {
+        await api.post('/auth/resend-verification', {email: value.email})
+        setSent(true)
+      } catch (err) {
+        if (err instanceof Error && err.message.includes('404')) {
+          setServerError(
+            'No pending account found for that email. Check for a typo or sign up again.'
+          )
+        } else {
+          setServerError('Something went wrong. Please try again.')
+        }
       }
-    } finally {
-      setIsLoading(false)
-    }
-  }
+    },
+  })
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-950">
@@ -208,35 +225,48 @@ function ResendForm() {
 
         {sent ? (
           <p className="text-gray-400 text-sm text-center">
-            We sent a new verification link to <span className="text-white">{email}</span>.
+            We sent a new verification link to{' '}
+            <span className="text-white">{form.state.values.email}</span>.
           </p>
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <p className="text-gray-400 text-sm">Enter your email and we'll send you a fresh link.</p>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="email" className="text-sm text-gray-300">Confirm your email</label>
-              <input
-                id="email"
-                type="email"
-                required
-                autoFocus
-                autoComplete="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500"
-                placeholder="you@example.com"
-              />
-            </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              form.handleSubmit()
+            }}
+            className="flex flex-col gap-4"
+          >
+            <p className="text-gray-400 text-sm">
+              Enter your email and we'll send you a fresh link.
+            </p>
 
-            {error && <p className="text-red-400 text-sm">{error}</p>}
+            <form.Field name="email">
+              {(field) => (
+                <FormField
+                  field={field}
+                  label="Confirm your email"
+                  type="email"
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  autoFocus
+                />
+              )}
+            </form.Field>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-sm transition-colors"
-            >
-              {isLoading ? 'Sending…' : 'Resend verification email'}
-            </button>
+            {serverError && <p className="text-red-400 text-sm">{serverError}</p>}
+
+            <form.Subscribe selector={(state) => state.isSubmitting}>
+              {(isSubmitting) => (
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-sm transition-colors"
+                >
+                  {isSubmitting ? 'Sending…' : 'Resend verification email'}
+                </button>
+              )}
+            </form.Subscribe>
           </form>
         )}
       </div>

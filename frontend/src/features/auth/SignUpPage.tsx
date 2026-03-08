@@ -1,31 +1,32 @@
 import {useState} from 'react'
 import {useNavigate, Link} from 'react-router-dom'
 import {api} from '../../api/client'
+import {useAppForm} from '../../hooks/useAppForm'
+import {FormField} from '../../components/ui/FormField'
+import {signUpSchema} from '../../schemas/auth'
 
-export default function SignUpPage() {
+export function SignUpPage() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [serverError, setServerError] = useState<string | null>(null)
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
-    setIsLoading(true)
-    try {
-      await api.post('/auth/register', {email})
-      setSubmitted(true)
-    } catch (err) {
-      if (err instanceof Error && err.message.includes('409')) {
-        setError('An account with this email already exists.')
-      } else {
-        setError('Something went wrong. Please try again.')
+  const form = useAppForm({
+    defaultValues: {email: ''},
+    validators: {onSubmit: signUpSchema},
+    onSubmit: async ({value}) => {
+      setServerError(null)
+      try {
+        await api.post('/auth/register', {email: value.email})
+        setSubmitted(true)
+      } catch (err) {
+        if (err instanceof Error && err.message.includes('409')) {
+          setServerError('An account with this email already exists.')
+        } else {
+          setServerError('Something went wrong. Please try again.')
+        }
       }
-    } finally {
-      setIsLoading(false)
-    }
-  }
+    },
+  })
 
   if (submitted) {
     return (
@@ -33,8 +34,9 @@ export default function SignUpPage() {
         <div className="w-full max-w-sm p-8 rounded-2xl bg-gray-900 shadow-xl flex flex-col gap-4 text-center">
           <h1 className="text-2xl font-bold text-white">Check your email</h1>
           <p className="text-gray-400 text-sm">
-            We sent a verification link to <span className="text-white">{email}</span>.
-            Click it to finish setting up your account.
+            We sent a verification link to{' '}
+            <span className="text-white">{form.state.values.email}</span>. Click it to finish
+            setting up your account.
           </p>
           <button
             onClick={() => navigate('/login')}
@@ -69,30 +71,39 @@ export default function SignUpPage() {
           <div className="flex-1 h-px bg-gray-700" />
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="email" className="text-sm text-gray-300">Email</label>
-            <input
-              id="email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500"
-              placeholder="you@example.com"
-            />
-          </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            form.handleSubmit()
+          }}
+          className="flex flex-col gap-4"
+        >
+          <form.Field name="email">
+            {(field) => (
+              <FormField
+                field={field}
+                label="Email"
+                type="email"
+                placeholder="you@example.com"
+                autoComplete="email"
+              />
+            )}
+          </form.Field>
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {serverError && <p className="text-red-400 text-sm">{serverError}</p>}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-sm transition-colors"
-          >
-            {isLoading ? 'Sending…' : 'Continue with email'}
-          </button>
+          <form.Subscribe selector={(state) => state.isSubmitting}>
+            {(isSubmitting) => (
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-sm transition-colors"
+              >
+                {isSubmitting ? 'Sending…' : 'Continue with email'}
+              </button>
+            )}
+          </form.Subscribe>
         </form>
 
         <p className="text-center text-sm text-gray-400">
@@ -105,6 +116,8 @@ export default function SignUpPage() {
     </div>
   )
 }
+
+export default SignUpPage
 
 function GoogleIcon() {
   return (
