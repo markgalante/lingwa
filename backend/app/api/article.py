@@ -26,6 +26,8 @@ class ArticleResponse(BaseModel):
 async def extract_vocabulary_endpoint(body: ArticleRequest) -> ArticleResponse:
     try:
         raw = await run_in_threadpool(extract_vocabulary, body.text, body.language_code)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 

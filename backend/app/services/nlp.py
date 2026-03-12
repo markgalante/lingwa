@@ -39,7 +39,7 @@ POS_LABEL_MAP: dict[str, PosLabel] = {
 class VocabItem(TypedDict):
     source: str
     translation: str
-    pos: str
+    pos: PosLabel
 
 
 @functools.cache
