@@ -101,13 +101,13 @@
 - [x] `GET /api/health` – simple liveness check
 - [x] Add CORS middleware so the React dev server can call the API
 
-### 1.2 – spaCy integration
-- [ ] Install `spacy`; download the language model for the active language (e.g. `nl_core_news_sm` for Dutch)
-- [ ] Load models on demand per language so adding a new language only requires pointing to its spaCy model
-- [ ] Extract **unique, meaningful tokens**: nouns, verbs, adjectives (POS filtering)
-- [ ] Filter out stop-words, punctuation, numbers, and short tokens (< 3 chars)
-- [ ] Lemmatise each token so inflected forms map to a single base word
-- [ ] Return a list of `{ source: str, translation: str, pos: str }` objects
+### 1.2 – spaCy integration ✓
+- [x] Install `spacy`; download the language model for the active language (e.g. `nl_core_news_sm` for Dutch)
+- [x] Load models on demand per language so adding a new language only requires pointing to its spaCy model
+- [x] Extract **unique, meaningful tokens**: nouns, verbs, adjectives (POS filtering)
+- [x] Filter out stop-words, punctuation, numbers, and short tokens (< 3 chars)
+- [x] Lemmatise each token so inflected forms map to a single base word
+- [x] Return a list of `{ source: str, translation: str, pos: str }` objects
 
 ### 1.3 – Translation
 - [ ] Integrate a free/open-source translation layer (options: `argostranslate`, `Helsinki-NLP` via HuggingFace, or a local dictionary file)
