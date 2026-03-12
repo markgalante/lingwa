@@ -10,6 +10,10 @@ tags_metadata = [
         "name": "auth",
         "description": "Authentication: email sign-up flow, Google OAuth, login, and current-user lookup.",
     },
+    {
+        "name": "article",
+        "description": "Vocabulary extraction from article text using spaCy NLP.",
+    },
 ]
 
 app = FastAPI(

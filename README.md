@@ -53,6 +53,10 @@ cd backend
 python3 -m venv .venv
 source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements-dev.txt
+python -m spacy download nl_core_news_sm
+python -m spacy download de_core_news_sm
+python -m spacy download fr_core_news_sm
+python -m spacy download es_core_news_sm
 uvicorn app.main:app --reload
 ```
 
