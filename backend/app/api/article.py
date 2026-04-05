@@ -14,7 +14,7 @@ class ArticleRequest(BaseModel):
 
 class VocabItem(BaseModel):
     source: str
-    translation: str
+    translations: list[str]
     pos: PosLabel
 
 
