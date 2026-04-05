@@ -110,8 +110,23 @@
 - [x] Return a list of `{ source: str, translation: str, pos: str }` objects
 
 ### 1.3 – Translation
-- [ ] Integrate a free/open-source translation layer (options: `argostranslate`, `Helsinki-NLP` via HuggingFace, or a local dictionary file)
-- [ ] Cache translations in-memory (or SQLite) to avoid re-translating the same word
+
+> **Scope:** Dutch (`nl→en`) only for now. Architecture is designed to support additional languages and swap the translation backend (e.g. DeepL/Google Translate) for production deployment without changing the NLP pipeline or API layer.
+
+#### 1.3.1 – argostranslate integration (Dutch)
+- [ ] Add a `Translator` protocol (`translate(lemma, lang_code) -> list[str]`) in `services/translation.py` so the implementation is swappable
+- [ ] Implement `ArgosTranslator` using `argostranslate` for offline `nl→en` translation
+- [ ] Cache translations in-memory (dict keyed by `(lemma, lang_code)`) to avoid re-translating the same word
+- [ ] Change `VocabItem.translation: str` → `VocabItem.translations: list[str]` throughout (API + service layer); argostranslate populates a single-item list for now
+- [ ] Narrow supported languages to Dutch only (`LanguageCode = Literal["nl"]`); remove unused spaCy models (de, fr, es)
+- [ ] Update `Dockerfile` to download only `nl_core_news_sm` and the argostranslate `nl→en` model
+
+#### 1.3.2 – Multi-translation via dictionary (Dutch)
+- [ ] Add a dictionary-based `Translator` implementation (e.g. Wiktionary or FreeDict) that returns multiple translations per lemma (e.g. `["bench", "couch"]` for `"bank"`)
+- [ ] Fall back to `ArgosTranslator` for words not found in the dictionary
+- [ ] No schema changes required — `translations: list[str]` already supports multiple values
+
+> **Future (deployment):** swap `ArgosTranslator` for a `DeepLTranslator` or `GoogleTranslator` via environment config for production scale and multi-language support.
 
 ### 1.4 – Chunking logic
 - [ ] Divide the article text into **chunks of 10 words** (by token index, not character count)
@@ -210,6 +225,7 @@
 - [ ] Expand `README.md`:  architecture diagram, environment variables, deployment notes
 - [ ] Add GitHub Actions CI pipeline: lint + test on every PR (frontend and backend)
 - [ ] Record a short demo screencast / GIF for the README
+- [ ] Make Docker builds reproducible: pre-download the argostranslate `nl→en` model file and `COPY` it into the image rather than fetching the package index at build time (currently `update_package_index()` is called at build time, making builds non-reproducible and sensitive to remote availability)
 
 ---
 

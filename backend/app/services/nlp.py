@@ -6,17 +6,16 @@ from typing import Literal, TypedDict
 import spacy
 from spacy.language import Language
 
+from app.services.translation import translator
+
 # Maps ISO 639-1 language codes to spaCy model names.
-# Add a new entry here to support an additional language.
+# Add a new entry here (alongside a new LanguageCode literal) to support an additional language.
 LANGUAGE_MODELS: dict[str, str] = {
     "nl": "nl_core_news_sm",
-    "de": "de_core_news_sm",
-    "fr": "fr_core_news_sm",
-    "es": "es_core_news_sm",
 }
 
 # Exported so the API layer can use it as a schema type.
-LanguageCode = Literal["nl", "de", "fr", "es"]
+LanguageCode = Literal["nl"]
 
 # Only these universal POS tags are extracted as meaningful vocabulary.
 MEANINGFUL_POS: set[str] = {"NOUN", "VERB", "ADJ", "ADV", "ADP", "CCONJ", "SCONJ"}
@@ -38,7 +37,7 @@ POS_LABEL_MAP: dict[str, PosLabel] = {
 
 class VocabItem(TypedDict):
     source: str
-    translation: str
+    translations: list[str]
     pos: PosLabel
 
 
@@ -64,11 +63,7 @@ def get_model(language_code: str) -> Language:
 
 
 def extract_vocabulary(text: str, language_code: str) -> list[VocabItem]:
-    """Extract unique, lemmatised vocabulary from *text*.
-
-    Returns a list of ``VocabItem`` dicts where *translation* is left empty
-    (filled in Phase 1.3).
-    """
+    """Extract unique, lemmatised vocabulary from *text* with translations."""
     nlp = get_model(language_code)
     doc = nlp(text)
 
@@ -91,6 +86,12 @@ def extract_vocabulary(text: str, language_code: str) -> list[VocabItem]:
 
         seen.add(lemma)
         # Safe: the MEANINGFUL_POS guard above ensures token.pos_ is always in the map.
-        items.append(VocabItem(source=lemma, translation="", pos=POS_LABEL_MAP[token.pos_]))
+        items.append(
+            VocabItem(
+                source=lemma,
+                translations=translator.translate(lemma, language_code),
+                pos=POS_LABEL_MAP[token.pos_],
+            )
+        )
 
     return items
