@@ -219,6 +219,7 @@
 
 **Goal**: Production-ready prototype with clear docs.
 
+- [ ] Restructure `backend/tests/` to mirror the production layout (`api/`, `services/`, `scripts/` subdirectories) once auth tests are added and the flat layout becomes unwieldy
 - [ ] End-to-end test with a real article in the target language (happy path + edge cases: very short article, all stop-words, duplicate words)
 - [ ] Fix any integration issues between frontend and backend
 - [ ] Write a `CONTRIBUTING.md` with branch naming, commit style, and PR guidelines

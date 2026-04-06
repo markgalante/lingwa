@@ -175,7 +175,7 @@ class TestArticleIntegration:
             "/api/article", json={"text": _LONG_NL, "language_code": "nl"}
         )
         indices = [c["index"] for c in resp.json()["chunks"]]
-        assert indices == list(range(len(indices)))
+        assert indices == list[int](range(len(indices)))
 
     async def test_vocab_items_have_required_fields(self, client: httpx.AsyncClient) -> None:
         resp = await client.post(

@@ -1,4 +1,4 @@
-"""Unit tests for the NLP service (Phase 1.5).
+"""Unit tests for the NLP service.
 
 Tests cover:
   - _build_chunks: partitioning a spaCy doc into fixed-size token lists
@@ -14,12 +14,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from app.services.nlp import (
-    DEFAULT_CHUNK_SIZE,
     MIN_TOKEN_LENGTH,
     _build_chunks,
     extract_vocabulary,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -97,41 +95,42 @@ def _run_extract(
 # _build_chunks
 # ---------------------------------------------------------------------------
 
+DEFAULT_CHUNK_SIZE = 10
 
 class TestBuildChunks:
     def test_empty_doc_returns_empty_list(self) -> None:
         doc = _make_doc([])
-        assert _build_chunks(doc) == []
+        assert _build_chunks(doc, DEFAULT_CHUNK_SIZE) == []
 
     def test_fewer_than_chunk_size_returns_single_chunk(self) -> None:
         tokens = [_make_token(i=i) for i in range(5)]
-        chunks = _build_chunks(_make_doc(tokens))
+        chunks = _build_chunks(_make_doc(tokens), DEFAULT_CHUNK_SIZE)
         assert len(chunks) == 1
         assert chunks[0] == tokens
 
     def test_exactly_chunk_size_returns_single_chunk(self) -> None:
         tokens = [_make_token(i=i) for i in range(DEFAULT_CHUNK_SIZE)]
-        chunks = _build_chunks(_make_doc(tokens))
+        chunks = _build_chunks(_make_doc(tokens), DEFAULT_CHUNK_SIZE)
         assert len(chunks) == 1
         assert len(chunks[0]) == DEFAULT_CHUNK_SIZE
 
     def test_fifteen_tokens_produces_two_chunks(self) -> None:
         tokens = [_make_token(i=i) for i in range(15)]
-        chunks = _build_chunks(_make_doc(tokens))
+        chunks = _build_chunks(_make_doc(tokens), DEFAULT_CHUNK_SIZE)
         assert len(chunks) == 2
         assert len(chunks[0]) == 10
         assert len(chunks[1]) == 5
 
     def test_twenty_tokens_produces_two_equal_chunks(self) -> None:
         tokens = [_make_token(i=i) for i in range(20)]
-        chunks = _build_chunks(_make_doc(tokens))
+        chunks = _build_chunks(_make_doc(tokens), DEFAULT_CHUNK_SIZE)
         assert len(chunks) == 2
         assert all(len(c) == DEFAULT_CHUNK_SIZE for c in chunks)
 
     def test_space_tokens_are_excluded_and_do_not_count_toward_chunk_size(self) -> None:
         word_tokens = [_make_token(is_space=False, i=i) for i in range(5)]
         space_tokens = [_make_token(is_space=True, i=5 + i) for i in range(5)]
-        chunks = _build_chunks(_make_doc(word_tokens + space_tokens))
+        chunks = _build_chunks(_make_doc(word_tokens + space_tokens), DEFAULT_CHUNK_SIZE)
         assert len(chunks) == 1
         assert len(chunks[0]) == 5
         assert all(not t.is_space for t in chunks[0])
@@ -144,7 +143,7 @@ class TestBuildChunks:
 
     def test_single_token_produces_single_chunk_of_one(self) -> None:
         tokens = [_make_token(i=0)]
-        chunks = _build_chunks(_make_doc(tokens))
+        chunks = _build_chunks(_make_doc(tokens), DEFAULT_CHUNK_SIZE)
         assert len(chunks) == 1
         assert len(chunks[0]) == 1
 
@@ -219,15 +218,18 @@ class TestLemmatisation:
         result = _run_extract([token])
         assert result[0]["vocabulary"] != []
 
-    @pytest.mark.parametrize("pos_, expected_label", [
-        ("NOUN", "noun"),
-        ("VERB", "verb"),
-        ("ADJ", "adj"),
-        ("ADV", "adv"),
-        ("ADP", "adp"),
-        ("CCONJ", "conj"),
-        ("SCONJ", "conj"),
-    ])
+    @pytest.mark.parametrize(
+        "pos_, expected_label",
+        [
+            ("NOUN", "noun"),
+            ("VERB", "verb"),
+            ("ADJ", "adj"),
+            ("ADV", "adv"),
+            ("ADP", "adp"),
+            ("CCONJ", "conj"),
+            ("SCONJ", "conj"),
+        ],
+    )
     def test_pos_label_mapping_is_correct(self, pos_: str, expected_label: str) -> None:
         token = _make_token(pos_=pos_, lemma_="woord", i=0)
         result = _run_extract([token])
@@ -250,7 +252,9 @@ class TestDeduplication:
 
     def test_same_lemma_in_different_chunks_appears_in_both(self) -> None:
         # Fill chunk 0 with 10 distinct words, then repeat one in chunk 1.
-        chunk0 = [_make_token(pos_="NOUN", lemma_=f"word{i}", text=f"word{i}", i=i) for i in range(10)]
+        chunk0 = [
+            _make_token(pos_="NOUN", lemma_=f"word{i}", text=f"word{i}", i=i) for i in range(10)
+        ]
         chunk1_token = _make_token(pos_="NOUN", lemma_="word0", text="word0", i=10)
         result = _run_extract(chunk0 + [chunk1_token])
         assert len(result) == 2
