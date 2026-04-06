@@ -42,6 +42,13 @@ docker compose up
 - Backend API: http://localhost:8000
 - API docs: http://localhost:8000/docs
 
+The translation dictionary and language models are baked into the image and preserved in a named Docker volume (`backend_data`). If you rebuild the image after a dictionary update, refresh the volume so the new data is used:
+
+```bash
+docker volume rm lingwa_backend_data
+docker compose up
+```
+
 ---
 
 ### Option B – Local development
@@ -93,6 +100,40 @@ source .venv/bin/activate
 ruff check .          # lint
 ruff format .         # format
 mypy .                # type-check
+```
+
+---
+
+### Tests
+
+**Backend**
+
+Before running tests for the first time, build the local dictionary (requires internet once):
+
+```bash
+cd backend
+source .venv/bin/activate
+python scripts/build_nl_dict.py   # writes backend/data/nl_en_dict.json
+```
+
+The script prints and saves a SHA-256 digest of the downloaded source. After the first successful build, copy the printed digest into `EXPECTED_SHA256` in `scripts/build_nl_dict.py` and commit it — future builds will fail loudly if the upstream file changes unexpectedly. To accept a new upstream snapshot, verify the change is intentional, update the digest, and commit.
+
+Then run the test suite:
+
+```bash
+pytest                # all tests
+pytest -v             # verbose output
+pytest tests/test_translation.py   # translation tests only
+```
+
+**Via Docker**
+
+```bash
+# if docker compose up is already running:
+docker compose exec backend pytest -v
+
+# as a one-off (stack doesn't need to be up):
+docker compose run --rm backend pytest -v
 ```
 
 ---
