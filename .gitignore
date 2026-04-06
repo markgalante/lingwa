@@ -35,3 +35,6 @@ Thumbs.db
 
 # Docker
 *.env.local
+
+# Generated data (build artifacts, not committed)
+backend/data/

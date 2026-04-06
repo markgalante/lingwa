@@ -113,18 +113,18 @@
 
 > **Scope:** Dutch (`nl→en`) only for now. Architecture is designed to support additional languages and swap the translation backend (e.g. DeepL/Google Translate) for production deployment without changing the NLP pipeline or API layer.
 
-#### 1.3.1 – argostranslate integration (Dutch)
-- [ ] Add a `Translator` protocol (`translate(lemma, lang_code) -> list[str]`) in `services/translation.py` so the implementation is swappable
-- [ ] Implement `ArgosTranslator` using `argostranslate` for offline `nl→en` translation
-- [ ] Cache translations in-memory (dict keyed by `(lemma, lang_code)`) to avoid re-translating the same word
-- [ ] Change `VocabItem.translation: str` → `VocabItem.translations: list[str]` throughout (API + service layer); argostranslate populates a single-item list for now
-- [ ] Narrow supported languages to Dutch only (`LanguageCode = Literal["nl"]`); remove unused spaCy models (de, fr, es)
-- [ ] Update `Dockerfile` to download only `nl_core_news_sm` and the argostranslate `nl→en` model
+#### 1.3.1 – argostranslate integration (Dutch) ✓
+- [x] Add a `Translator` protocol (`translate(lemma, lang_code) -> list[str]`) in `services/translation.py` so the implementation is swappable
+- [x] Implement `ArgosTranslator` using `argostranslate` for offline `nl→en` translation
+- [x] Cache translations in-memory (dict keyed by `(lemma, lang_code)`) to avoid re-translating the same word
+- [x] Change `VocabItem.translation: str` → `VocabItem.translations: list[str]` throughout (API + service layer); argostranslate populates a single-item list for now
+- [x] Narrow supported languages to Dutch only (`LanguageCode = Literal["nl"]`); remove unused spaCy models (de, fr, es)
+- [x] Update `Dockerfile` to download only `nl_core_news_sm` and the argostranslate `nl→en` model
 
-#### 1.3.2 – Multi-translation via dictionary (Dutch)
-- [ ] Add a dictionary-based `Translator` implementation (e.g. Wiktionary or FreeDict) that returns multiple translations per lemma (e.g. `["bench", "couch"]` for `"bank"`)
-- [ ] Fall back to `ArgosTranslator` for words not found in the dictionary
-- [ ] No schema changes required — `translations: list[str]` already supports multiple values
+#### 1.3.2 – Multi-translation via dictionary (Dutch) ✓
+- [x] Add a dictionary-based `Translator` implementation (kaikki.org Wiktionary dump) that returns multiple translations per lemma (e.g. `["bench", "couch"]` for `"bank"`)
+- [x] Fall back to `ArgosTranslator` for words not found in the dictionary
+- [x] No schema changes required — `translations: list[str]` already supports multiple values
 
 > **Future (deployment):** swap `ArgosTranslator` for a `DeepLTranslator` or `GoogleTranslator` via environment config for production scale and multi-language support.
 
@@ -226,6 +226,7 @@
 - [ ] Add GitHub Actions CI pipeline: lint + test on every PR (frontend and backend)
 - [ ] Record a short demo screencast / GIF for the README
 - [ ] Make Docker builds reproducible: pre-download the argostranslate `nl→en` model file and `COPY` it into the image rather than fetching the package index at build time (currently `update_package_index()` is called at build time, making builds non-reproducible and sensitive to remote availability)
+- [ ] Pin the spaCy model to a specific wheel URL in the Dockerfile (currently `python -m spacy download nl_core_news_sm` fetches the latest compatible release on every cache miss)
 
 ---
 
@@ -240,6 +241,7 @@
 - [ ] **Browser extension**: highlight and quiz words directly on any webpage
 - [ ] **Offline support**: PWA manifest + service worker for offline TTS cache
 - [ ] **Analytics dashboard**: track accuracy over time with charts
+- [ ] **Error reporting**: integrate Sentry (or equivalent) across the backend; replace `logger.warning` degradation notices (e.g. missing translation dictionary) with `capture_message` / `capture_exception` so silent failures surface on a dashboard
 
 ---
 
