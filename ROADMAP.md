@@ -129,14 +129,14 @@
 > **Future (deployment):** swap `ArgosTranslator` for a `DeepLTranslator` or `GoogleTranslator` via environment config for production scale and multi-language support.
 
 ### 1.4 – Chunking logic
-- [ ] Divide the article text into **chunks of 10 words** (by token index, not character count)
-- [ ] Group vocabulary by chunk so the quiz can be scoped per chunk
-- [ ] Return chunk metadata alongside the vocabulary list
+- [x] Divide the article text into **chunks of 10 words** (by token index, not character count)
+- [x] Group vocabulary by chunk so the quiz can be scoped per chunk
+- [x] Return chunk metadata alongside the vocabulary list
 
 ### 1.5 – Tests
-- [ ] Unit tests for the POS filter and lemmatiser
-- [ ] Unit tests for the chunking helper
-- [ ] Integration test for `POST /api/article` with a short fixture article
+- [x] Unit tests for the POS filter and lemmatiser
+- [x] Unit tests for the chunking helper
+- [x] Integration test for `POST /api/article` with a short fixture article
 
 ---
 
