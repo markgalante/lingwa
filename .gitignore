@@ -38,3 +38,4 @@ Thumbs.db
 
 # Generated data (build artifacts, not committed)
 backend/data/
+backend/.local/
