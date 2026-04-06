@@ -44,7 +44,7 @@ KAIKKI_URL = (
 #      update the digest below, and commit.
 #
 # TODO: set this after the first successful build.
-EXPECTED_SHA256 = ""
+EXPECTED_SHA256 = "484d73f31e319c40fe883ae6e918d81c778b7181c5157cd9232d8c13ba044e66"
 
 # Translations with more than this many words are likely definitions, not glosses.
 MAX_GLOSS_WORDS = 3
