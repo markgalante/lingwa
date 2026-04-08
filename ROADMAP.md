@@ -140,15 +140,14 @@
 
 ---
 
-## Phase 2 – Backend: Text-to-Speech
+## Phase 2 – Frontend: Text-to-Speech
 
-**Goal**: Return audio pronunciation for individual words in the user's target language.
+**Goal**: Pronounce individual words in the user's target language using the browser's built-in speech synthesis.
 
-- [ ] Evaluate **Coqui TTS** (`tts` Python package) with voice models for each supported language; start with Dutch
-- [ ] `GET /api/tts/{language_code}/{word}` – streams back a WAV/MP3 clip for the given word
-- [ ] Cache generated audio files on disk (keyed by language + word) to avoid re-synthesis
-- [ ] Add a fallback to the **Web Speech API** (`SpeechSynthesis`) on the frontend if the backend TTS endpoint is unavailable
-- [ ] Document how to download Coqui voice models for each supported language in the README
+- [ ] Use the **Web Speech API** (`window.speechSynthesis`) to pronounce words on click — no backend required
+- [ ] Map each supported `language_code` to its BCP-47 locale (e.g. `nl` → `nl-NL`) for correct voice selection
+- [ ] Encapsulate TTS in a `useSpeech(languageCode)` hook that exposes a `speak(word)` function
+- [ ] Gracefully handle browsers where `speechSynthesis` is unavailable (hide the speaker icon rather than erroring)
 
 ---
 
@@ -193,7 +192,7 @@
 
 - [ ] `ArticleView` component renders the article word-by-word as `<span>` elements
 - [ ] On **hover**: show a tooltip with the English translation
-- [ ] On **click**: play the TTS audio clip via the backend `/api/tts/{word}` endpoint
+- [ ] On **click**: pronounce the word via the `useSpeech` hook (Web Speech API)
 - [ ] "Add to review list" button inside the tooltip; maintain a `forgottenWords` list in state
 - [ ] `ForgottenWordsList` sidebar/panel showing all added words with their translations
 - [ ] Allow users to re-quiz themselves on forgotten words at any time
@@ -252,7 +251,7 @@
 |-------|-------------|
 | 0 | Project skeleton, tooling & authentication |
 | 1 | NLP vocabulary extraction API |
-| 2 | Text-to-speech endpoint |
+| 2 | Text-to-speech via Web Speech API |
 | 3 | Article input UI |
 | 4 | Matching quiz with adaptive retesting |
 | 5 | Interactive article view |
