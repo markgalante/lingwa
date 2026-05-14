@@ -224,6 +224,7 @@
 - [ ] Write a `CONTRIBUTING.md` with branch naming, commit style, and PR guidelines
 - [ ] Expand `README.md`:  architecture diagram, environment variables, deployment notes
 - [ ] Add GitHub Actions CI pipeline: lint + test on every PR (frontend and backend)
+- [ ] Replace `--reload` in `docker-compose.yml` with a production-grade server config (e.g. Gunicorn + Uvicorn workers: `gunicorn app.main:app -k uvicorn.workers.UvicornWorker`). `--reload` watches the filesystem for changes and is only appropriate for local development — in production it wastes resources and risks unintended restarts on any file write.
 - [ ] Record a short demo screencast / GIF for the README
 - [ ] Make Docker builds reproducible: pre-download the argostranslate `nl→en` model file and `COPY` it into the image rather than fetching the package index at build time (currently `update_package_index()` is called at build time, making builds non-reproducible and sensitive to remote availability)
 - [ ] Pin the spaCy model to a specific wheel URL in the Dockerfile (currently `python -m spacy download nl_core_news_sm` fetches the latest compatible release on every cache miss)
