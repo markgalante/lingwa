@@ -10,6 +10,12 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lingwa -d lingwa"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   backend:
     build: ./backend
@@ -26,8 +32,11 @@ services:
       - PYTHONPATH=/app
       - DATABASE_URL=postgresql+asyncpg://lingwa:lingwa@db:5432/lingwa
     depends_on:
-      - db
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      db:
+        condition: service_healthy
+    # Runs migrations before starting the server. If migrations fail, the container
+    # exits immediately (uvicorn never starts). Alembic output is visible in docker logs.
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
   frontend:
     build: ./frontend

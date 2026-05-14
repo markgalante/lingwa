@@ -42,6 +42,14 @@ docker compose up
 - Backend API: http://localhost:8000
 - API docs: http://localhost:8000/docs
 
+Database migrations run automatically on startup (`alembic upgrade head` runs before uvicorn). No manual migration step is needed.
+
+If you ever need to run migrations manually (e.g. after a volume reset):
+
+```bash
+docker compose exec backend alembic upgrade head
+```
+
 The translation dictionary and language models are baked into the image and preserved in a named Docker volume (`backend_data`). If you rebuild the image after a dictionary update, refresh the volume so the new data is used:
 
 ```bash
