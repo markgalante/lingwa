@@ -144,10 +144,10 @@
 
 **Goal**: Pronounce individual words in the user's target language using the browser's built-in speech synthesis.
 
-- [ ] Use the **Web Speech API** (`window.speechSynthesis`) to pronounce words on click — no backend required
-- [ ] Map each supported `language_code` to its BCP-47 locale (e.g. `nl` → `nl-NL`) for correct voice selection
-- [ ] Encapsulate TTS in a `useSpeech(languageCode)` hook that exposes a `speak(word)` function
-- [ ] Gracefully handle browsers where `speechSynthesis` is unavailable (hide the speaker icon rather than erroring)
+- [x] Use the **Web Speech API** (`window.speechSynthesis`) to pronounce words on click — no backend required
+- [x] Map each supported `language_code` to its BCP-47 locale (e.g. `nl` → `nl-NL`) for correct voice selection
+- [x] Encapsulate TTS in a `useSpeech(languageCode)` hook that exposes a `speak(word)` function
+- [x] Gracefully handle browsers where `speechSynthesis` is unavailable (hide the speaker icon rather than erroring)
 
 ---
 
