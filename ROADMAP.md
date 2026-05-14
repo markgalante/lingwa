@@ -151,15 +151,38 @@
 
 ---
 
-## Phase 3 – Frontend: Article Input
+## Phase 3 – Article Input (Backend + Frontend)
 
-**Goal**: Provide a clean UI for pasting an article and triggering processing.
+**Goal**: Persist processed articles in the database and provide a clean UI for pasting an article and triggering processing.
 
-- [ ] `ArticleInput` component: `<textarea>` with a placeholder and a "Start Learning" button
-- [ ] Show a loading spinner while the API processes the article
-- [ ] Display a friendly error state if the API call fails
-- [ ] Validate that the textarea is not empty before submitting
-- [ ] Store the processed article data in React context (or a lightweight state manager like Zustand)
+### 3.1 – Backend: Models & migration
+- [ ] `Article` model: `id` (UUID v7), `user_id` (FK → `users`), `source_language_code`, `target_language_code`, `raw_text`, `created_at`
+- [ ] `Lemma` model: `id` (UUID v7), `lemma`, `source_language_code`, `target_language_code`, `translations` (TEXT[]) — unique on `(lemma, source_language_code, target_language_code)`
+- [ ] `ArticleLemma` model: `id` (UUID v7), `article_id` (FK → `articles`), `lemma_id` (FK → `lemmas`), `pos`, `chunk_index`
+- [ ] Single Alembic migration covering all three tables
+
+### 3.2 – Backend: API endpoints
+- [ ] Update `POST /api/article`: persist article + vocab items, return `{ id, chunks, vocabulary }`
+- [ ] New `GET /api/articles/{id}`: fetch article + its vocab items
+
+### 3.3 – Frontend: Infrastructure
+- [ ] Install `@tanstack/react-query` and `zustand`
+- [ ] Wrap app in `QueryClientProvider` in `main.tsx`
+- [ ] Central `src/config/languages.ts` (available languages list)
+- [ ] Zustand article store (holds current article ID + processed data)
+
+### 3.4 – Frontend: Article Input UI
+- [ ] `/learn/new` protected route
+- [ ] `ArticleInputPage` + `ArticleInput` component: `<textarea>`, language selector, Zod validation
+- [ ] TanStack Query mutation → `POST /api/article`
+- [ ] Loading spinner while the API processes the article
+- [ ] Friendly error state if the API call fails
+- [ ] On success: navigate to `/learn/:id`
+
+### 3.5 – Frontend: Article Detail stub
+- [ ] `/learn/:id` protected route
+- [ ] TanStack Query fetch → `GET /api/articles/{id}`
+- [ ] Raw JSON display for now (Phase 4/5 will replace this)
 
 ---
 
