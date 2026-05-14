@@ -157,8 +157,9 @@
 
 ### 3.1 – Backend: Models & migration
 - [ ] `Article` model: `id` (UUID v7), `user_id` (FK → `users`), `source_language_code`, `target_language_code`, `raw_text`, `created_at`
-- [ ] `VocabItem` model: `id` (UUID v7), `article_id` (FK → `articles`), `lemma`, `pos`, `chunk_index`, `translations` (TEXT[])
-- [ ] Single Alembic migration covering both tables
+- [ ] `Lemma` model: `id` (UUID v7), `lemma`, `source_language_code`, `target_language_code`, `translations` (TEXT[]) — unique on `(lemma, source_language_code, target_language_code)`
+- [ ] `ArticleLemma` model: `id` (UUID v7), `article_id` (FK → `articles`), `lemma_id` (FK → `lemmas`), `pos`, `chunk_index`
+- [ ] Single Alembic migration covering all three tables
 
 ### 3.2 – Backend: API endpoints
 - [ ] Update `POST /api/article`: persist article + vocab items, return `{ id, chunks, vocabulary }`
