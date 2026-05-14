@@ -156,7 +156,7 @@
 **Goal**: Persist processed articles in the database and provide a clean UI for pasting an article and triggering processing.
 
 ### 3.1 – Backend: Models & migration
-- [ ] `Article` model: `id` (UUID v7), `user_id` (FK → `users`), `language_code`, `raw_text`, `created_at`
+- [ ] `Article` model: `id` (UUID v7), `user_id` (FK → `users`), `source_language_code`, `target_language_code`, `raw_text`, `created_at`
 - [ ] `VocabItem` model: `id` (UUID v7), `article_id` (FK → `articles`), `lemma`, `pos`, `chunk_index`, `translations` (TEXT[])
 - [ ] Single Alembic migration covering both tables
 
